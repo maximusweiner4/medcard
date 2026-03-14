@@ -1,0 +1,9 @@
+{
+  "name": "medcard",
+  "private": true,
+  "workspaces": ["server", "mobile"],
+  "scripts": {
+    "server": "npm run dev --workspace=server",
+    "mobile": "npm run start --workspace=mobile"
+  }
+}

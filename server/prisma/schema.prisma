@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CAREGIVER
+  PATIENT
+}
+
+enum PermissionLevel {
+  ADMIN
+  VIEW_ONLY
+}
+
+enum ChangeType {
+  ADDED
+  UPDATED
+  STOPPED
+  RESTARTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  supabaseId String  @unique
+  email     String   @unique
+  phone     String?
+  name      String
+  role      UserRole @default(CAREGIVER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  primaryPatients    Patient[]           @relation("PrimaryCaregiver")
+  caregiverRelations CaregiverPatient[]
+  shareLinks         ShareLink[]
+  medicationChanges  MedicationChangeLog[]
+}
+
+model Patient {
+  id               String   @id @default(uuid())
+  name             String
+  dateOfBirth      DateTime?
+  allergies        String[]  @default([])
+  primaryCaregiverId String
+  shareToken       String   @unique @default(uuid())
+  qrCodeUrl        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  primaryCaregiver User               @relation("PrimaryCaregiver", fields: [primaryCaregiverId], references: [id])
+  medications      Medication[]
+  caregivers       CaregiverPatient[]
+  shareLinks       ShareLink[]
+}
+
+model Medication {
+  id             String   @id @default(uuid())
+  patientId      String
+  rxcui          String?
+  drugName       String
+  brandName      String?
+  dose           String?
+  form           String?
+  route          String?
+  frequency      String?
+  instructions   String?
+  prescriber     String?
+  pharmacy       String?
+  pillColor      String?
+  pillShape      String?
+  pillImprint    String?
+  pillImageUrl   String?
+  bottlePhotoUrl String?
+  isActive       Boolean  @default(true)
+  ndc            String?
+  addedById      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient     Patient               @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  changeLogs  MedicationChangeLog[]
+}
+
+model CaregiverPatient {
+  id              String          @id @default(uuid())
+  caregiverId     String
+  patientId       String
+  permissionLevel PermissionLevel @default(VIEW_ONLY)
+  relationship    String?
+  createdAt       DateTime        @default(now())
+
+  caregiver User    @relation(fields: [caregiverId], references: [id])
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([caregiverId, patientId])
+}
+
+model ShareLink {
+  id          String    @id @default(uuid())
+  patientId   String
+  token       String    @unique @default(uuid())
+  createdById String
+  expiresAt   DateTime?
+  accessCount Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdBy User    @relation(fields: [createdById], references: [id])
+}
+
+model MedicationChangeLog {
+  id             String     @id @default(uuid())
+  medicationId   String
+  changedById    String
+  changeType     ChangeType
+  previousValues Json?
+  newValues      Json?
+  createdAt      DateTime   @default(now())
+
+  medication Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  changedBy  User       @relation(fields: [changedById], references: [id])
+}
