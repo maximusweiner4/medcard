@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView, Switch } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { patientsApi } from '../../src/services/api';
+import { useBiometricStore } from '../../src/stores/biometricStore';
 
 export default function ShareScreen() {
   const { activePatient } = usePatientStore();
   const router = useRouter();
   const [shareData, setShareData] = useState<{ shareUrl: string; qrCodeDataUrl: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const { isEnabled, setSetting } = useBiometricStore();
 
   if (!activePatient) {
     return (
@@ -37,6 +40,18 @@ export default function ShareScreen() {
   async function handleCopyLink() {
     if (!shareData) return;
     await Share.share({ message: `${activePatient!.name}'s medication list: ${shareData.shareUrl}` });
+  }
+
+  async function handleBiometricToggle(value: boolean) {
+    if (value) {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      if (!hasHardware || !isEnrolled) {
+        Alert.alert('Biometrics Unavailable', 'This device does not have biometric authentication set up.');
+        return;
+      }
+    }
+    await setSetting(value);
   }
 
   return (
@@ -82,6 +97,21 @@ export default function ShareScreen() {
           <Ionicons name="chevron-forward" size={22} color="#059669" />
         </View>
       </TouchableOpacity>
+
+      <View style={styles.securityCard}>
+        <View style={styles.securityRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.securityTitle}>Require Biometrics</Text>
+            <Text style={styles.securitySubtitle}>Lock the app when it goes to the background</Text>
+          </View>
+          <Switch
+            value={isEnabled}
+            onValueChange={handleBiometricToggle}
+            trackColor={{ false: '#e2e8f0', true: '#0d9488' }}
+            thumbColor="#fff"
+          />
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -108,4 +138,8 @@ const styles = StyleSheet.create({
   displayModeRow: { flexDirection: 'row', alignItems: 'center' },
   displayModeTitle: { fontSize: 16, fontWeight: '700', color: '#065f46', marginBottom: 6 },
   displayModeText: { fontSize: 14, color: '#047857', lineHeight: 20 },
+  securityCard: { marginTop: 16, backgroundColor: '#fff', borderRadius: 12, padding: 18, borderWidth: 1, borderColor: '#e2e8f0' },
+  securityRow: { flexDirection: 'row', alignItems: 'center' },
+  securityTitle: { fontSize: 15, fontWeight: '600', color: '#0f172a', marginBottom: 4 },
+  securitySubtitle: { fontSize: 13, color: '#64748b' },
 });
