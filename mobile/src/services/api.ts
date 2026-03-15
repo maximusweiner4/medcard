@@ -36,6 +36,7 @@ export const patientsApi = {
   addMedication: (id: string, data: any) => api.post(`/api/patients/${id}/medications`, data),
   inviteCaregiver: (id: string, data: { email: string; permissionLevel?: string; relationship?: string }) =>
     api.post(`/api/patients/${id}/caregivers`, data),
+  checkInteractions: (id: string) => api.get(`/api/patients/${id}/interactions`),
 };
 
 // ─── Medications ──────────────────────────────────────────────────────────────

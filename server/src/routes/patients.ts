@@ -245,4 +245,47 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
   } catch (err) { next(err); }
 });
 
+/** GET /api/patients/:id/interactions — check drug interactions via RxNorm */
+router.get('/:id/interactions', async (req: AuthRequest, res, next) => {
+  try {
+    const caregiver = await prisma.caregiverPatient.findFirst({
+      where: { patientId: req.params.id, caregiverId: req.userId },
+    });
+    if (!caregiver) { res.status(403).json({ error: 'Access denied' }); return; }
+
+    const meds = await prisma.medication.findMany({
+      where: { patientId: req.params.id, isActive: true },
+      select: { rxcui: true, drugName: true },
+    });
+    const rxcuis = meds.filter((m) => m.rxcui).map((m) => m.rxcui as string);
+
+    if (rxcuis.length < 2) {
+      res.json({ interactions: [], message: 'Not enough medications with drug codes to check.' });
+      return;
+    }
+
+    const url = `https://rxnav.nlm.nih.gov/REST/interaction/list.json?rxcuis=${rxcuis.join('+')}`;
+    const response = await fetch(url);
+    const rxData = await response.json() as any;
+
+    const interactions: { drug1: string; drug2: string; severity: string; description: string }[] = [];
+    const groups = rxData?.fullInteractionTypeGroup ?? [];
+    for (const group of groups) {
+      for (const type of (group.fullInteractionType ?? [])) {
+        const names = type.minConcept?.map((c: any) => c.name) ?? [];
+        for (const pair of (type.interactionPair ?? [])) {
+          interactions.push({
+            drug1: names[0] ?? 'Unknown',
+            drug2: names[1] ?? 'Unknown',
+            severity: pair.severity ?? 'unknown',
+            description: pair.description ?? '',
+          });
+        }
+      }
+    }
+
+    res.json({ interactions, checkedAt: new Date().toISOString() });
+  } catch (err) { next(err); }
+});
+
 export default router;
