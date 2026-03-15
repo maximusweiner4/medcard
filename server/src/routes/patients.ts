@@ -171,7 +171,7 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
     const {
       rxcui, drugName, brandName, dose, form, route, frequency,
       instructions, prescriber, indication, pharmacy, pillColor, pillShape,
-      pillImprint, pillImageUrl, bottlePhotoUrl, ndc,
+      pillImprint, pillImageUrl, bottlePhotoUrl, ndc, nextRefillDate, pillsRemaining,
     } = req.body;
     if (!drugName || typeof drugName !== 'string' || !drugName.trim()) {
       res.status(400).json({ error: 'drugName is required' }); return;
@@ -192,6 +192,8 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
         indication: indication ? stripHtml(indication) : undefined,
         pharmacy: pharmacy ? stripHtml(pharmacy) : undefined,
         pillColor, pillShape, pillImprint, pillImageUrl, bottlePhotoUrl,
+        ...(nextRefillDate && { nextRefillDate: new Date(nextRefillDate) }),
+        ...(pillsRemaining !== undefined && typeof pillsRemaining === 'number' && { pillsRemaining }),
         addedById: req.userId,
       },
     });

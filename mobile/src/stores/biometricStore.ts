@@ -18,7 +18,8 @@ export const useBiometricStore = create<BiometricState>((set) => ({
   loadSetting: async () => {
     try {
       const value = await AsyncStorage.getItem('biometric:enabled');
-      set({ isEnabled: value === 'true' });
+      const enabled = value === 'true';
+      set({ isEnabled: enabled, isLocked: enabled });
     } catch {}
   },
 

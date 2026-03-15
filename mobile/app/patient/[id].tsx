@@ -55,7 +55,7 @@ export default function PatientProfileScreen() {
   async function exportPdf() {
     setExportLoading(true);
     try {
-      const token = (await (await import('../../../src/services/supabase')).supabase.auth.getSession()).data.session?.access_token;
+      const token = (await (await import('../../src/services/supabase')).supabase.auth.getSession()).data.session?.access_token;
       const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
       const fileUri = (FileSystem.cacheDirectory ?? '') + 'medications.pdf';
       const result = await FileSystem.downloadAsync(

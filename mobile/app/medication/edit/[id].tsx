@@ -5,6 +5,20 @@ import { medicationsApi } from '../../../src/services/api';
 
 const FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every morning', 'Every evening', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Weekly', 'Other'];
 
+function parseDateInput(input: string): string | null {
+  if (!input.trim()) return null;
+  const parsed = new Date(input.trim());
+  if (!isNaN(parsed.getTime())) return parsed.toISOString();
+  // Try MM/DD/YYYY
+  const parts = input.trim().split('/');
+  if (parts.length === 3) {
+    const [m, d, y] = parts;
+    const date = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    if (!isNaN(date.getTime())) return date.toISOString();
+  }
+  return null;
+}
+
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -60,7 +74,7 @@ export default function EditMedicationScreen() {
         prescriber: prescriber.trim() || null,
         indication: indication.trim() || null,
         pharmacy: pharmacy.trim() || null,
-        nextRefillDate: nextRefillDate.trim() || null,
+        nextRefillDate: parseDateInput(nextRefillDate),
         pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim(), 10) : null,
       });
       router.back();

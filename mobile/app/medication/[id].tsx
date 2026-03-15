@@ -42,7 +42,17 @@ export default function MedicationDetailScreen() {
   function confirmDelete() {
     Alert.alert('Delete Medication', `Permanently delete "${med?.drugName}"? This cannot be undone.`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => { await deleteMedication(id); router.back(); } },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        setActionLoading(true);
+        try {
+          await deleteMedication(id);
+          router.back();
+        } catch (e: any) {
+          Alert.alert('Error', e?.message || 'Failed to delete medication');
+        } finally {
+          setActionLoading(false);
+        }
+      }},
     ]);
   }
 

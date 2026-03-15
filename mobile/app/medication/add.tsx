@@ -10,6 +10,20 @@ type Step = 'search' | 'details';
 
 const FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every morning', 'Every evening', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Weekly', 'Other'];
 
+function parseDateInput(input: string): string | null {
+  if (!input.trim()) return null;
+  const parsed = new Date(input.trim());
+  if (!isNaN(parsed.getTime())) return parsed.toISOString();
+  // Try MM/DD/YYYY
+  const parts = input.trim().split('/');
+  if (parts.length === 3) {
+    const [m, d, y] = parts;
+    const date = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    if (!isNaN(date.getTime())) return date.toISOString();
+  }
+  return null;
+}
+
 export default function AddMedicationScreen() {
   const { activePatient } = usePatientStore();
   const { addMedication } = useMedicationStore();
@@ -98,7 +112,7 @@ export default function AddMedicationScreen() {
         prescriber: prescriber.trim() || undefined,
         indication: indication.trim() || undefined,
         pillImageUrl: selected.pillImageUrl,
-        nextRefillDate: nextRefillDate.trim() || undefined,
+        nextRefillDate: parseDateInput(nextRefillDate) || undefined,
         pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim()) : undefined,
       });
       router.back();
