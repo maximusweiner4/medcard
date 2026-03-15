@@ -107,6 +107,9 @@ export default function MedicationDetailScreen() {
       ) : null}
 
       <View style={styles.actions}>
+        <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/medication/edit/${id}`)}>
+          <Text style={styles.editBtnText}>Edit Medication</Text>
+        </TouchableOpacity>
         {med.isActive ? (
           <TouchableOpacity style={[styles.stopBtn, { opacity: actionLoading ? 0.6 : 1 }]} onPress={confirmStop} disabled={actionLoading}>
             <Text style={styles.stopBtnText}>Stop Medication</Text>
@@ -156,4 +159,6 @@ const styles = StyleSheet.create({
   restartBtnText: { color: '#16a34a', fontWeight: '700', fontSize: 15 },
   deleteBtn: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   deleteBtnText: { color: '#94a3b8', fontSize: 14 },
+  editBtn: { backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 0 },
+  editBtnText: { color: '#1e40af', fontWeight: '700', fontSize: 15 },
 });

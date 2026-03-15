@@ -27,6 +27,7 @@ export default function RootLayout() {
       <Stack.Screen name="patient/[id]" options={{ headerShown: true, title: 'Patient Profile' }} />
       <Stack.Screen name="medication/add" options={{ headerShown: true, title: 'Add Medication' }} />
       <Stack.Screen name="medication/[id]" options={{ headerShown: true, title: 'Medication Details' }} />
+      <Stack.Screen name="medication/edit/[id]" options={{ headerShown: true, title: 'Edit Medication' }} />
       <Stack.Screen name="patient-display" options={{ headerShown: false }} />
     </Stack>
     </ErrorBoundary>
