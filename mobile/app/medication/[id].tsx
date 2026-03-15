@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { medicationsApi } from '../../src/services/api';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import type { Medication } from '../../src/types';
@@ -12,6 +13,9 @@ export default function MedicationDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(false);
+  const [historyLogs, setHistoryLogs] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,6 +44,29 @@ export default function MedicationDetailScreen() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => { await deleteMedication(id); router.back(); } },
     ]);
+  }
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+
+  async function loadHistory() {
+    setHistoryLoading(true);
+    try {
+      const { data } = await medicationsApi.history(id);
+      setHistoryLogs(data);
+    } catch {
+      setHistoryLogs([]);
+    } finally {
+      setHistoryLoading(false);
+    }
   }
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} color="#0f4c81" />;
@@ -106,6 +133,52 @@ export default function MedicationDetailScreen() {
         </View>
       ) : null}
 
+      {/* History Section */}
+      <TouchableOpacity
+        style={styles.historyToggle}
+        onPress={() => {
+          const next = !historyVisible;
+          setHistoryVisible(next);
+          if (next && historyLogs.length === 0) loadHistory();
+        }}
+      >
+        <Text style={styles.historyToggleText}>
+          {historyVisible ? 'Hide History' : 'Show History'}
+        </Text>
+        <Ionicons name={historyVisible ? 'chevron-up' : 'chevron-down'} size={16} color="#64748b" />
+      </TouchableOpacity>
+
+      {historyVisible && (
+        <View style={styles.historySection}>
+          {historyLoading ? (
+            <ActivityIndicator color="#0f4c81" style={{ paddingVertical: 20 }} />
+          ) : historyLogs.length === 0 ? (
+            <Text style={styles.historyEmpty}>No history found.</Text>
+          ) : (
+            historyLogs.map((log) => {
+              const changeColors: Record<string, { bg: string; text: string }> = {
+                ADDED: { bg: '#ccfbf1', text: '#0f766e' },
+                UPDATED: { bg: '#dbeafe', text: '#1e40af' },
+                STOPPED: { bg: '#fee2e2', text: '#dc2626' },
+                RESTARTED: { bg: '#dcfce7', text: '#16a34a' },
+              };
+              const colors = changeColors[log.changeType] ?? { bg: '#f1f5f9', text: '#475569' };
+              return (
+                <View key={log.id} style={styles.historyItem}>
+                  <View style={styles.historyItemHeader}>
+                    <View style={[styles.changeTypeBadge, { backgroundColor: colors.bg }]}>
+                      <Text style={[styles.changeTypeText, { color: colors.text }]}>{log.changeType}</Text>
+                    </View>
+                    <Text style={styles.historyTime}>{timeAgo(log.createdAt)}</Text>
+                  </View>
+                  <Text style={styles.historyBy}>by {log.changedBy?.name || log.changedBy?.email || 'Unknown'}</Text>
+                </View>
+              );
+            })
+          )}
+        </View>
+      )}
+
       <View style={styles.actions}>
         <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/medication/edit/${id}`)}>
           <Text style={styles.editBtnText}>Edit Medication</Text>
@@ -161,4 +234,14 @@ const styles = StyleSheet.create({
   deleteBtnText: { color: '#94a3b8', fontSize: 14 },
   editBtn: { backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 0 },
   editBtnText: { color: '#1e40af', fontWeight: '700', fontSize: 15 },
+  historyToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
+  historyToggleText: { fontSize: 14, fontWeight: '600', color: '#64748b' },
+  historySection: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0' },
+  historyEmpty: { color: '#94a3b8', fontSize: 14, textAlign: 'center', paddingVertical: 8 },
+  historyItem: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  historyItemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  changeTypeBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  changeTypeText: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  historyTime: { fontSize: 12, color: '#94a3b8' },
+  historyBy: { fontSize: 12, color: '#64748b' },
 });
