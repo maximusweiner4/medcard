@@ -19,11 +19,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
+      // Only lock on background — do NOT auto-unlock on foreground.
+      // Auto-calling unlock() triggers inactive/active AppState events
+      // from the biometric prompt itself, causing an infinite lock loop.
+      if (appState.current === 'active' && nextAppState === 'background') {
         if (isEnabled) lock();
-      }
-      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-        if (isEnabled) unlock();
       }
       appState.current = nextAppState;
     });
