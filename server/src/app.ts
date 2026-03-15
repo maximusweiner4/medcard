@@ -19,7 +19,12 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+
+const corsOrigin = process.env.CORS_ORIGIN;
+if (!corsOrigin && process.env.NODE_ENV === 'production') {
+  console.warn('[WARN] CORS_ORIGIN not set — defaulting to wildcard. Set CORS_ORIGIN in production.');
+}
+app.use(cors({ origin: corsOrigin || '*' }));
 app.use(morgan('dev'));
 app.use(express.json());
 

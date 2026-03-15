@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '../src/stores/authStore';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 export default function RootLayout() {
   const { user, loading, loadSession } = useAuthStore();
@@ -8,7 +9,7 @@ export default function RootLayout() {
   const router = useRouter();
 
   useEffect(() => {
-    loadSession();
+    loadSession().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -19,6 +20,7 @@ export default function RootLayout() {
   }, [user, loading, segments]);
 
   return (
+    <ErrorBoundary>
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
@@ -27,5 +29,6 @@ export default function RootLayout() {
       <Stack.Screen name="medication/[id]" options={{ headerShown: true, title: 'Medication Details' }} />
       <Stack.Screen name="patient-display" options={{ headerShown: false }} />
     </Stack>
+    </ErrorBoundary>
   );
 }

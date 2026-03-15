@@ -6,21 +6,29 @@ interface PatientState {
   patients: Patient[];
   activePatient: Patient | null;
   loading: boolean;
+  error: string | null;
   fetchPatients: () => Promise<void>;
   selectPatient: (patient: Patient) => void;
   createPatient: (data: { name: string; dateOfBirth?: string; allergies?: string[] }) => Promise<Patient>;
   updatePatient: (id: string, data: any) => Promise<void>;
 }
 
-export const usePatientStore = create<PatientState>((set, get) => ({
+export const usePatientStore = create<PatientState>((set) => ({
   patients: [],
   activePatient: null,
   loading: false,
+  error: null,
 
   fetchPatients: async () => {
-    set({ loading: true });
-    const { data } = await patientsApi.list();
-    set({ patients: data, loading: false });
+    set({ loading: true, error: null });
+    try {
+      const { data } = await patientsApi.list();
+      set({ patients: data });
+    } catch (err: any) {
+      set({ error: err?.response?.data?.error || err?.message || 'Failed to load patients' });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   selectPatient: (patient) => set({ activePatient: patient }),

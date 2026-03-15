@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { searchRxNorm, getPillImage } from '../../src/services/rxnorm';
@@ -29,15 +29,22 @@ export default function AddMedicationScreen() {
   const [prescriber, setPrescriber] = useState('');
   const [indication, setIndication] = useState('');
   const [saving, setSaving] = useState(false);
+  const [searchError, setSearchError] = useState(false);
 
-  const debounceTimer = useState<ReturnType<typeof setTimeout> | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
 
   function handleSearchChange(text: string) {
     setSearchTerm(text);
-    if (debounceTimer[0]) clearTimeout(debounceTimer[0]);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     if (text.length < 2) { setResults([]); return; }
 
-    debounceTimer[1](setTimeout(async () => {
+    debounceTimerRef.current = setTimeout(async () => {
       setSearching(true);
       try {
         const candidates = await searchRxNorm(text);
@@ -49,20 +56,26 @@ export default function AddMedicationScreen() {
           return true;
         });
         setResults(unique.slice(0, 8));
+        setSearchError(false);
       } catch {
         setResults([]);
+        setSearchError(true);
       } finally {
         setSearching(false);
       }
-    }, 400));
+    }, 400);
   }
 
   async function handleSelectDrug(candidate: DrugSearchResult) {
     setSelected(candidate);
-    // Fetch pill image in background
-    const imageUrl = await getPillImage(candidate.rxcui);
-    if (imageUrl) setSelected((prev) => prev ? { ...prev, pillImageUrl: imageUrl } : prev);
     setStep('details');
+    // Fetch pill image in background — don't block navigation
+    try {
+      const imageUrl = await getPillImage(candidate.rxcui);
+      if (imageUrl) setSelected((prev) => prev ? { ...prev, pillImageUrl: imageUrl } : prev);
+    } catch {
+      // Non-critical: pill image is optional
+    }
   }
 
   async function handleSave() {
@@ -119,7 +132,9 @@ export default function AddMedicationScreen() {
           )}
           ListEmptyComponent={
             searchTerm.length >= 2 && !searching ? (
-              <Text style={styles.noResults}>No results found. Try a different spelling.</Text>
+              <Text style={styles.noResults}>
+                {searchError ? 'Search failed. Check your connection.' : 'No results found. Try a different spelling.'}
+              </Text>
             ) : null
           }
         />

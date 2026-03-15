@@ -1,11 +1,21 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { validateShareToken } from '../services/share.service';
 import { prisma } from '../lib/prisma';
 
 const router = Router();
 
+// Rate-limit the public share endpoint to prevent scraping and token brute-force
+const shareLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests. Please try again later.',
+});
+
 /** GET /share/:token — public read-only medication list web view */
-router.get('/:token', async (req, res, next) => {
+router.get('/:token', shareLimiter, async (req, res, next) => {
   try {
     const patientId = await validateShareToken(req.params.token);
     if (!patientId) {

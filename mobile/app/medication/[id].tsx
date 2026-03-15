@@ -10,19 +10,28 @@ export default function MedicationDetailScreen() {
   const { stopMedication, restartMedication, deleteMedication } = useMedicationStore();
   const [med, setMed] = useState<Medication | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    medicationsApi.get(id).then(({ data }) => {
-      setMed(data);
-      setLoading(false);
-    });
+    setLoading(true);
+    setError(null);
+    medicationsApi.get(id)
+      .then(({ data }) => setMed(data))
+      .catch(() => setError('Failed to load medication. Tap to retry.'))
+      .finally(() => setLoading(false));
   }, [id]);
 
   function confirmStop() {
     Alert.alert('Stop Medication', `Mark "${med?.drugName}" as stopped? It will be moved to the stopped list and can be restarted.`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Stop', style: 'destructive', onPress: async () => { await stopMedication(id); router.back(); } },
+      { text: 'Stop', style: 'destructive', onPress: async () => {
+        setActionLoading(true);
+        try { await stopMedication(id); router.back(); }
+        catch (e: any) { Alert.alert('Error', e?.message || 'Failed to stop medication'); }
+        finally { setActionLoading(false); }
+      }},
     ]);
   }
 
@@ -34,7 +43,18 @@ export default function MedicationDetailScreen() {
   }
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} color="#0f4c81" />;
-  if (!med) return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Not found</Text></View>;
+  if (!med) return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+      <Text style={{ color: '#64748b', textAlign: 'center', marginBottom: 16 }}>
+        {error || 'Medication not found.'}
+      </Text>
+      {error && (
+        <TouchableOpacity onPress={() => { setLoading(true); setError(null); medicationsApi.get(id).then(({ data }) => setMed(data)).catch(() => setError('Failed to load medication. Tap to retry.')).finally(() => setLoading(false)); }}>
+          <Text style={{ color: '#0d9488', fontWeight: '600' }}>Retry</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   const details = [
     { label: 'Indication', value: med.indication },
@@ -88,11 +108,16 @@ export default function MedicationDetailScreen() {
 
       <View style={styles.actions}>
         {med.isActive ? (
-          <TouchableOpacity style={styles.stopBtn} onPress={confirmStop}>
+          <TouchableOpacity style={[styles.stopBtn, { opacity: actionLoading ? 0.6 : 1 }]} onPress={confirmStop} disabled={actionLoading}>
             <Text style={styles.stopBtnText}>Stop Medication</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.restartBtn} onPress={() => restartMedication(id)}>
+          <TouchableOpacity style={[styles.restartBtn, { opacity: actionLoading ? 0.6 : 1 }]} disabled={actionLoading} onPress={async () => {
+            setActionLoading(true);
+            try { await restartMedication(id); }
+            catch (e: any) { Alert.alert('Error', e?.message || 'Failed to restart medication'); }
+            finally { setActionLoading(false); }
+          }}>
             <Text style={styles.restartBtnText}>Restart Medication</Text>
           </TouchableOpacity>
         )}

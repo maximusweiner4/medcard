@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
@@ -8,13 +9,13 @@ import type { Medication } from '../../src/types';
 
 export default function MedicationsScreen() {
   const { activePatient } = usePatientStore();
-  const { medications, fetchMedications, stopMedication, loading } = useMedicationStore();
+  const { medications, fetchMedications, stopMedication, loading, error } = useMedicationStore();
   const [showStopped, setShowStopped] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (activePatient) fetchMedications(activePatient.id, showStopped);
-  }, [activePatient, showStopped]);
+  }, [activePatient, showStopped]));
 
   if (!activePatient) {
     return (
@@ -25,6 +26,13 @@ export default function MedicationsScreen() {
       </View>
     );
   }
+
+  if (error) return (
+    <View style={styles.empty}>
+      <Text style={styles.emptyTitle}>Failed to load</Text>
+      <Text style={styles.emptyText}>{error}</Text>
+    </View>
+  );
 
   const active = medications.filter((m) => m.isActive);
   const stopped = medications.filter((m) => !m.isActive);

@@ -17,31 +17,37 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: true,
 
   loadSession: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      try {
-        const { data } = await api.post('/api/auth/sync');
-        set({ user: data, loading: false });
-      } catch {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        try {
+          const { data } = await api.post('/api/auth/sync');
+          set({ user: data, loading: false });
+        } catch {
+          await supabase.auth.signOut();
+          set({ user: null, loading: false });
+        }
+      } else {
         set({ loading: false });
       }
-    } else {
+    } catch {
       set({ loading: false });
     }
   },
 
   signIn: async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (error) throw error;
     const { data } = await api.post('/api/auth/sync');
+    if (!data) throw new Error('Session sync failed. Please try again.');
     set({ user: data });
   },
 
   signUp: async (email, password, name) => {
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
-      options: { data: { name } },
+      options: { data: { name: name.trim() } },
     });
     if (error) throw error;
     // User needs to verify email before signing in

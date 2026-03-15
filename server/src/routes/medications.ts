@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
+import { stripHtml } from '../lib/sanitize';
 
 const router = Router();
 router.use(requireAuth);
@@ -38,33 +39,38 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
       pharmacy, pillColor, pillShape, pillImprint, pillImageUrl, bottlePhotoUrl,
     } = req.body;
 
-    const updated = await prisma.medication.update({
-      where: { id: req.params.id },
-      data: {
-        ...(dose !== undefined && { dose }),
-        ...(form !== undefined && { form }),
-        ...(route !== undefined && { route }),
-        ...(frequency !== undefined && { frequency }),
-        ...(instructions !== undefined && { instructions }),
-        ...(prescriber !== undefined && { prescriber }),
-        ...(indication !== undefined && { indication }),
-        ...(pharmacy !== undefined && { pharmacy }),
-        ...(pillColor !== undefined && { pillColor }),
-        ...(pillShape !== undefined && { pillShape }),
-        ...(pillImprint !== undefined && { pillImprint }),
-        ...(pillImageUrl !== undefined && { pillImageUrl }),
-        ...(bottlePhotoUrl !== undefined && { bottlePhotoUrl }),
-      },
-    });
+    // Run medication update + audit log in a single transaction
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.medication.update({
+        where: { id: req.params.id },
+        data: {
+          ...(dose !== undefined && { dose: stripHtml(dose) }),
+          ...(form !== undefined && { form: stripHtml(form) }),
+          ...(route !== undefined && { route: stripHtml(route) }),
+          ...(frequency !== undefined && { frequency: stripHtml(frequency) }),
+          ...(instructions !== undefined && { instructions: stripHtml(instructions) }),
+          ...(prescriber !== undefined && { prescriber: stripHtml(prescriber) }),
+          ...(indication !== undefined && { indication: stripHtml(indication) }),
+          ...(pharmacy !== undefined && { pharmacy: stripHtml(pharmacy) }),
+          ...(pillColor !== undefined && { pillColor }),
+          ...(pillShape !== undefined && { pillShape }),
+          ...(pillImprint !== undefined && { pillImprint }),
+          ...(pillImageUrl !== undefined && { pillImageUrl }),
+          ...(bottlePhotoUrl !== undefined && { bottlePhotoUrl }),
+        },
+      });
 
-    await prisma.medicationChangeLog.create({
-      data: {
-        medicationId: req.params.id,
-        changedById: req.userId!,
-        changeType: 'UPDATED',
-        previousValues: existing as any,
-        newValues: updated as any,
-      },
+      await tx.medicationChangeLog.create({
+        data: {
+          medicationId: req.params.id,
+          changedById: req.userId!,
+          changeType: 'UPDATED',
+          previousValues: existing as any,
+          newValues: result as any,
+        },
+      });
+
+      return result;
     });
 
     res.json(updated);
@@ -77,19 +83,21 @@ router.patch('/:id/stop', async (req: AuthRequest, res, next) => {
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Not found or insufficient permission' }); return; }
 
-    const updated = await prisma.medication.update({
-      where: { id: req.params.id },
-      data: { isActive: false },
-    });
-
-    await prisma.medicationChangeLog.create({
-      data: {
-        medicationId: req.params.id,
-        changedById: req.userId!,
-        changeType: 'STOPPED',
-        previousValues: existing as any,
-        newValues: updated as any,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.medication.update({
+        where: { id: req.params.id },
+        data: { isActive: false },
+      });
+      await tx.medicationChangeLog.create({
+        data: {
+          medicationId: req.params.id,
+          changedById: req.userId!,
+          changeType: 'STOPPED',
+          previousValues: existing as any,
+          newValues: result as any,
+        },
+      });
+      return result;
     });
 
     res.json(updated);
@@ -102,19 +110,21 @@ router.patch('/:id/restart', async (req: AuthRequest, res, next) => {
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Not found or insufficient permission' }); return; }
 
-    const updated = await prisma.medication.update({
-      where: { id: req.params.id },
-      data: { isActive: true },
-    });
-
-    await prisma.medicationChangeLog.create({
-      data: {
-        medicationId: req.params.id,
-        changedById: req.userId!,
-        changeType: 'RESTARTED',
-        previousValues: existing as any,
-        newValues: updated as any,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.medication.update({
+        where: { id: req.params.id },
+        data: { isActive: true },
+      });
+      await tx.medicationChangeLog.create({
+        data: {
+          medicationId: req.params.id,
+          changedById: req.userId!,
+          changeType: 'RESTARTED',
+          previousValues: existing as any,
+          newValues: result as any,
+        },
+      });
+      return result;
     });
 
     res.json(updated);

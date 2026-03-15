@@ -5,6 +5,7 @@ import type { Medication } from '../types';
 interface MedicationState {
   medications: Medication[];
   loading: boolean;
+  error: string | null;
   fetchMedications: (patientId: string, showStopped?: boolean) => Promise<void>;
   addMedication: (patientId: string, data: Partial<Medication>) => Promise<Medication>;
   updateMedication: (id: string, data: Partial<Medication>) => Promise<void>;
@@ -13,14 +14,21 @@ interface MedicationState {
   deleteMedication: (id: string) => Promise<void>;
 }
 
-export const useMedicationStore = create<MedicationState>((set, get) => ({
+export const useMedicationStore = create<MedicationState>((set) => ({
   medications: [],
   loading: false,
+  error: null,
 
   fetchMedications: async (patientId, showStopped = false) => {
-    set({ loading: true });
-    const { data } = await patientsApi.getMedications(patientId, showStopped);
-    set({ medications: data, loading: false });
+    set({ loading: true, error: null });
+    try {
+      const { data } = await patientsApi.getMedications(patientId, showStopped);
+      set({ medications: data });
+    } catch (err: any) {
+      set({ error: err?.response?.data?.error || err?.message || 'Failed to load medications' });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   addMedication: async (patientId, data) => {
@@ -37,6 +45,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
   },
 
   stopMedication: async (id) => {
+    // API call first — only update local state if it succeeds
     await medicationsApi.stop(id);
     set((state) => ({
       medications: state.medications.map((m) =>
@@ -46,6 +55,7 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
   },
 
   restartMedication: async (id) => {
+    // API call first — only update local state if it succeeds
     await medicationsApi.restart(id);
     set((state) => ({
       medications: state.medications.map((m) =>

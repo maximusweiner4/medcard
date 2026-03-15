@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import { useAuthStore } from '../../src/stores/authStore';
 import type { Patient } from '../../src/types';
 
 export default function PatientsScreen() {
-  const { patients, fetchPatients, createPatient, selectPatient, loading } = usePatientStore();
+  const { patients, fetchPatients, createPatient, selectPatient, loading, error } = usePatientStore();
   const { signOut, user } = useAuthStore();
   const router = useRouter();
   const [showAdd, setShowAdd] = useState(false);
@@ -21,6 +21,7 @@ export default function PatientsScreen() {
 
   async function handleCreate() {
     if (!name.trim()) { Alert.alert('Name is required'); return; }
+    Keyboard.dismiss();
     setCreating(true);
     try {
       const allergyList = allergies.split(',').map((a) => a.trim()).filter(Boolean);
@@ -42,21 +43,23 @@ export default function PatientsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, {user?.name?.split(' ')[0]}</Text>
+        <Text style={styles.greeting}>Hello, {user?.name?.split(' ')[0] ?? 'there'}</Text>
         <TouchableOpacity onPress={signOut}><Text style={styles.signOut}>Sign out</Text></TouchableOpacity>
       </View>
 
       {patients.length === 0 && !loading ? (
         <View style={styles.empty}>
           <Ionicons name="people-circle-outline" size={64} color="#0d9488" style={{ marginBottom: 16 }} />
-          <Text style={styles.emptyTitle}>No patients yet</Text>
-          <Text style={styles.emptyText}>Add a loved one to start managing their medications.</Text>
+          <Text style={styles.emptyTitle}>{error ? 'Failed to load' : 'No patients yet'}</Text>
+          <Text style={styles.emptyText}>{error ?? 'Add a loved one to start managing their medications.'}</Text>
         </View>
       ) : (
         <FlatList
           data={patients}
           keyExtractor={(p) => p.id}
           contentContainerStyle={{ paddingVertical: 12 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.card} onPress={() => openPatient(item)}>
               <View style={styles.cardLeft}>
@@ -84,7 +87,7 @@ export default function PatientsScreen() {
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>New Patient Profile</Text>
-            <TouchableOpacity onPress={() => setShowAdd(false)}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => { Keyboard.dismiss(); setShowAdd(false); }}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
           </View>
           <TextInput style={styles.input} placeholder="Full name *" value={name} onChangeText={setName} autoCapitalize="words" placeholderTextColor="#94a3b8" />
           <TextInput style={styles.input} placeholder="Date of birth (MM/DD/YYYY)" value={dob} onChangeText={setDob} placeholderTextColor="#94a3b8" />
