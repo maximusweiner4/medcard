@@ -57,14 +57,16 @@ export default function PatientProfileScreen() {
     try {
       const token = (await (await import('../../src/services/supabase')).supabase.auth.getSession()).data.session?.access_token;
       const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const fileUri = (FileSystem.cacheDirectory ?? '') + 'medications.pdf';
+      const cacheDir = FileSystem.cacheDirectory;
+      if (!cacheDir) throw new Error('Cache directory unavailable');
+      const fileUri = cacheDir + 'medications.pdf';
       const result = await FileSystem.downloadAsync(
         `${baseUrl}/api/patients/${patient.id}/pdf`,
         fileUri,
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      if (result.status !== 200) throw new Error('Export failed');
-      await Sharing.shareAsync(result.uri, { mimeType: 'application/pdf', dialogTitle: 'Export Medication List' });
+      if (result.status !== 200) throw new Error(`Export failed (HTTP ${result.status})`);
+      await Sharing.shareAsync(result.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: 'Export Medication List' });
     } catch (err: any) {
       Alert.alert('Export Error', err?.message || 'Failed to export PDF');
     } finally {

@@ -9,6 +9,7 @@ interface BiometricState {
   setSetting: (enabled: boolean) => Promise<void>;
   unlock: () => Promise<boolean>;
   lock: () => void;
+  cancelLock: () => void;
 }
 
 export const useBiometricStore = create<BiometricState>((set) => ({
@@ -19,14 +20,14 @@ export const useBiometricStore = create<BiometricState>((set) => ({
     try {
       const value = await AsyncStorage.getItem('biometric:enabled');
       const enabled = value === 'true';
-      set({ isEnabled: enabled, isLocked: enabled });
+      set({ isEnabled: enabled, isLocked: false });
     } catch {}
   },
 
   setSetting: async (enabled) => {
     try {
       await AsyncStorage.setItem('biometric:enabled', enabled ? 'true' : 'false');
-      set({ isEnabled: enabled, isLocked: enabled });
+      set({ isEnabled: enabled, isLocked: false });
     } catch {}
   },
 
@@ -48,4 +49,5 @@ export const useBiometricStore = create<BiometricState>((set) => ({
   },
 
   lock: () => set({ isLocked: true }),
+  cancelLock: () => set({ isLocked: false }),
 }));

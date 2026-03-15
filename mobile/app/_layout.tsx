@@ -7,7 +7,7 @@ import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 export default function RootLayout() {
   const { user, loading, loadSession } = useAuthStore();
-  const { isEnabled, isLocked, loadSetting, unlock, lock } = useBiometricStore();
+  const { isEnabled, isLocked, loadSetting, unlock, lock, cancelLock } = useBiometricStore();
   const segments = useSegments();
   const router = useRouter();
   const appState = useRef<AppStateStatus>(AppState.currentState);
@@ -46,6 +46,9 @@ export default function RootLayout() {
         <TouchableOpacity style={lockStyles.btn} onPress={unlock}>
           <Text style={lockStyles.btnText}>Use Biometrics</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={[lockStyles.btn, lockStyles.cancelBtn]} onPress={cancelLock}>
+          <Text style={[lockStyles.btnText, lockStyles.cancelBtnText]}>Cancel</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -72,4 +75,6 @@ const lockStyles = StyleSheet.create({
   subtitle: { fontSize: 16, color: '#bfdbfe', marginBottom: 40 },
   btn: { backgroundColor: '#fff', paddingVertical: 16, paddingHorizontal: 48, borderRadius: 999, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
   btnText: { color: '#0f4c81', fontWeight: '800', fontSize: 16 },
+  cancelBtn: { marginTop: 12, backgroundColor: 'transparent', borderWidth: 1, borderColor: '#fff', shadowOpacity: 0, elevation: 0 },
+  cancelBtnText: { color: '#fff' },
 });
