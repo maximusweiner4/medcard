@@ -262,13 +262,30 @@ router.get('/:id/interactions', async (req: AuthRequest, res, next) => {
     const rxcuis = meds.filter((m) => m.rxcui).map((m) => m.rxcui as string);
 
     if (rxcuis.length < 2) {
-      res.json({ interactions: [], message: 'Not enough medications with drug codes to check.' });
+      const total = meds.length;
+      const withCodes = rxcuis.length;
+      res.json({
+        interactions: [],
+        message: total === 0
+          ? 'No active medications found for this patient.'
+          : `${withCodes} of ${total} medication${total !== 1 ? 's have' : ' has'} a drug code (RxCUI). At least 2 are needed to check interactions. Add medications via the drug search to populate drug codes.`,
+      });
       return;
     }
 
     const url = `https://rxnav.nlm.nih.gov/REST/interaction/list.json?rxcuis=${rxcuis.join('+')}`;
-    const response = await fetch(url);
-    const rxData = await response.json() as any;
+    let rxData: any = {};
+    try {
+      const rxResponse = await fetch(url);
+      if (!rxResponse.ok) {
+        res.status(502).json({ error: `RxNorm service error (HTTP ${rxResponse.status}). Try again later.` });
+        return;
+      }
+      rxData = await rxResponse.json();
+    } catch {
+      res.status(502).json({ error: 'Unable to reach RxNorm drug interaction service. Check your internet connection.' });
+      return;
+    }
 
     const interactions: { drug1: string; drug2: string; severity: string; description: string }[] = [];
     const groups = rxData?.fullInteractionTypeGroup ?? [];

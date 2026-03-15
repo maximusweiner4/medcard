@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
-import { patientsApi, caregiversApi } from '../../src/services/api';
+import { patientsApi, caregiversApi, api } from '../../src/services/api';
 import { CaregiverRelation } from '../../src/types';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -55,20 +55,33 @@ export default function PatientProfileScreen() {
   async function exportPdf() {
     setExportLoading(true);
     try {
-      const token = (await (await import('../../src/services/supabase')).supabase.auth.getSession()).data.session?.access_token;
-      const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const cacheDir = FileSystem.cacheDirectory;
-      if (!cacheDir) throw new Error('Cache directory unavailable');
-      const fileUri = cacheDir + 'medications.pdf';
-      const result = await FileSystem.downloadAsync(
-        `${baseUrl}/api/patients/${patient.id}/pdf`,
-        fileUri,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-      );
-      if (result.status !== 200) throw new Error(`Export failed (HTTP ${result.status})`);
-      await Sharing.shareAsync(result.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: 'Export Medication List' });
+      // Use axios (auth interceptor handles JWT automatically)
+      const response = await api.get(`/api/patients/${patient!.id}/pdf`, {
+        responseType: 'arraybuffer',
+      });
+
+      // Convert arraybuffer → base64
+      const bytes = new Uint8Array(response.data as ArrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      const base64 = btoa(binary);
+
+      // documentDirectory is more reliable than cacheDirectory in Expo Go
+      const dir = FileSystem.documentDirectory ?? FileSystem.cacheDirectory;
+      if (!dir) throw new Error('File system unavailable on this device');
+      const fileUri = dir + 'medications.pdf';
+
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'application/pdf',
+        UTI: 'com.adobe.pdf',
+        dialogTitle: 'Export Medication List',
+      });
     } catch (err: any) {
-      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
+      Alert.alert('Export Error', err?.response?.data?.error || err?.message || 'Failed to export PDF');
     } finally {
       setExportLoading(false);
     }
