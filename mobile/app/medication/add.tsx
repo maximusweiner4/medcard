@@ -30,6 +30,8 @@ export default function AddMedicationScreen() {
   const [indication, setIndication] = useState('');
   const [saving, setSaving] = useState(false);
   const [searchError, setSearchError] = useState(false);
+  const [nextRefillDate, setNextRefillDate] = useState('');
+  const [pillsRemaining, setPillsRemaining] = useState('');
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -96,6 +98,8 @@ export default function AddMedicationScreen() {
         prescriber: prescriber.trim() || undefined,
         indication: indication.trim() || undefined,
         pillImageUrl: selected.pillImageUrl,
+        nextRefillDate: nextRefillDate.trim() || undefined,
+        pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim()) : undefined,
       });
       router.back();
     } catch (err: any) {
@@ -181,6 +185,12 @@ export default function AddMedicationScreen() {
 
       <Text style={styles.label}>Indication (Reason for Taking)</Text>
       <TextInput style={styles.input} placeholder="e.g. High blood pressure, Type 2 diabetes" value={indication} onChangeText={setIndication} placeholderTextColor="#94a3b8" />
+
+      <Text style={styles.label}>Next Refill Date</Text>
+      <TextInput style={styles.input} placeholder="MM/DD/YYYY" value={nextRefillDate} onChangeText={setNextRefillDate} placeholderTextColor="#94a3b8" />
+
+      <Text style={styles.label}>Pills Remaining</Text>
+      <TextInput style={styles.input} placeholder="e.g. 30" value={pillsRemaining} onChangeText={setPillsRemaining} keyboardType="numeric" placeholderTextColor="#94a3b8" />
 
       <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
         {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Save Medication</Text>}

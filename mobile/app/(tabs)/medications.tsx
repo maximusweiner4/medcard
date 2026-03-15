@@ -7,6 +7,10 @@ import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import type { Medication } from '../../src/types';
 
+function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+}
+
 export default function MedicationsScreen() {
   const { activePatient } = usePatientStore();
   const { medications, fetchMedications, stopMedication, loading, error } = useMedicationStore();
@@ -62,6 +66,11 @@ export default function MedicationsScreen() {
         <Text style={styles.doseText}>{[item.dose, item.form, item.route].filter(Boolean).join(' · ')}</Text>
         {item.indication ? <Text style={styles.indicationText}>{item.indication}</Text> : null}
         {item.frequency ? <View style={styles.freqChip}><Text style={styles.freqText}>{item.frequency}</Text></View> : null}
+        {item.nextRefillDate && daysUntil(item.nextRefillDate) <= 7 && daysUntil(item.nextRefillDate) >= 0 && (
+          <View style={styles.refillBadge}>
+            <Text style={styles.refillText}>Refill in {daysUntil(item.nextRefillDate)}d</Text>
+          </View>
+        )}
       </View>
       {item.isActive && (
         <TouchableOpacity style={styles.stopBtn} onPress={() => confirmStop(item)}>
@@ -120,6 +129,8 @@ const styles = StyleSheet.create({
   indicationText: { fontSize: 12, color: '#0d9488', fontStyle: 'italic', marginTop: 2 },
   freqChip: { backgroundColor: '#ccfbf1', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginTop: 6 },
   freqText: { color: '#0f766e', fontSize: 11, fontWeight: '600' },
+  refillBadge: { backgroundColor: '#f59e0b', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginTop: 6 },
+  refillText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   stopBtn: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fca5a5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   stopBtnText: { color: '#dc2626', fontSize: 12, fontWeight: '600' },
   toggleStopped: { alignItems: 'center', paddingVertical: 12 },

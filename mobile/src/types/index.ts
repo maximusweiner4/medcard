@@ -37,6 +37,8 @@ export interface Medication {
   bottlePhotoUrl?: string;
   isActive: boolean;
   ndc?: string;
+  nextRefillDate?: string;
+  pillsRemaining?: number;
   createdAt: string;
   updatedAt: string;
 }

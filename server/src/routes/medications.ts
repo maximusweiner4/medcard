@@ -37,6 +37,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
     const {
       dose, form, route, frequency, instructions, prescriber, indication,
       pharmacy, pillColor, pillShape, pillImprint, pillImageUrl, bottlePhotoUrl,
+      nextRefillDate, pillsRemaining,
     } = req.body;
 
     // Run medication update + audit log in a single transaction
@@ -57,6 +58,8 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
           ...(pillImprint !== undefined && { pillImprint }),
           ...(pillImageUrl !== undefined && { pillImageUrl }),
           ...(bottlePhotoUrl !== undefined && { bottlePhotoUrl }),
+          ...(nextRefillDate !== undefined && { nextRefillDate: nextRefillDate ? new Date(nextRefillDate) : null }),
+          ...(pillsRemaining !== undefined && { pillsRemaining: typeof pillsRemaining === 'number' ? pillsRemaining : null }),
         },
       });
 
