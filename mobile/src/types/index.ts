@@ -28,6 +28,7 @@ export interface Medication {
   frequency?: string;
   instructions?: string;
   prescriber?: string;
+  indication?: string;
   pharmacy?: string;
   pillColor?: string;
   pillShape?: string;

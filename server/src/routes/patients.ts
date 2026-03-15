@@ -133,7 +133,7 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
 
     const {
       rxcui, drugName, brandName, dose, form, route, frequency,
-      instructions, prescriber, pharmacy, pillColor, pillShape,
+      instructions, prescriber, indication, pharmacy, pillColor, pillShape,
       pillImprint, pillImageUrl, bottlePhotoUrl, ndc,
     } = req.body;
     if (!drugName) { res.status(400).json({ error: 'drugName is required' }); return; }
@@ -142,7 +142,7 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
       data: {
         patientId: req.params.id,
         rxcui, drugName, brandName, dose, form, route, frequency,
-        instructions, prescriber, pharmacy, pillColor, pillShape,
+        instructions, prescriber, indication, pharmacy, pillColor, pillShape,
         pillImprint, pillImageUrl, bottlePhotoUrl, ndc,
         addedById: req.userId,
       },

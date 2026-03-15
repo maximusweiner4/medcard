@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { patientsApi } from '../../src/services/api';
 
 export default function ShareScreen() {
   const { activePatient } = usePatientStore();
+  const router = useRouter();
   const [shareData, setShareData] = useState<{ shareUrl: string; qrCodeDataUrl: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (!activePatient) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyIcon}>📤</Text>
+        <Ionicons name="share-social-outline" size={64} color="#0d9488" style={{ marginBottom: 16 }} />
         <Text style={styles.emptyTitle}>No patient selected</Text>
         <Text style={styles.emptyText}>Select a patient from the Patients tab first.</Text>
       </View>
@@ -50,7 +53,7 @@ export default function ShareScreen() {
       ) : (
         <View style={styles.shareBox}>
           <View style={styles.qrContainer}>
-            <QRCode value={shareData.shareUrl} size={220} color="#0f4c81" backgroundColor="#fff" />
+            <QRCode value={shareData.shareUrl} size={220} color="#0d9488" backgroundColor="#fff" />
           </View>
           <Text style={styles.qrNote}>Providers can scan this QR code to instantly access the medication list</Text>
 
@@ -59,7 +62,8 @@ export default function ShareScreen() {
           </View>
 
           <TouchableOpacity style={styles.copyBtn} onPress={handleCopyLink}>
-            <Text style={styles.copyBtnText}>📤 Share Link</Text>
+            <Ionicons name="share-social-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={styles.copyBtnText}>Share Link</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.newLinkBtn} onPress={() => { setShareData(null); }}>
@@ -68,10 +72,16 @@ export default function ShareScreen() {
         </View>
       )}
 
-      <View style={styles.displayModeCard}>
-        <Text style={styles.displayModeTitle}>Patient Display Mode</Text>
-        <Text style={styles.displayModeText}>Large-text view for your loved one to show to providers or keep on their home screen.</Text>
-      </View>
+      <TouchableOpacity style={styles.displayModeCard} onPress={() => router.push('/patient-display')}>
+        <View style={styles.displayModeRow}>
+          <Ionicons name="tablet-landscape-outline" size={28} color="#065f46" style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.displayModeTitle}>Patient Display Mode</Text>
+            <Text style={styles.displayModeText}>Large-text view for your loved one to show to providers or keep on their home screen.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={22} color="#059669" />
+        </View>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -79,23 +89,23 @@ export default function ShareScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: '#f8fafc' },
-  emptyIcon: { fontSize: 56, marginBottom: 16 },
   emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 8 },
   emptyText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
   title: { fontSize: 24, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#64748b', marginBottom: 28, lineHeight: 20 },
-  btn: { backgroundColor: '#0f4c81', paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
+  btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   shareBox: { alignItems: 'center' },
-  qrContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+  qrContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   qrNote: { fontSize: 13, color: '#64748b', textAlign: 'center', marginBottom: 20 },
   urlBox: { backgroundColor: '#f1f5f9', borderRadius: 10, padding: 14, width: '100%', marginBottom: 14 },
   urlText: { fontSize: 13, color: '#475569', fontFamily: 'monospace' },
-  copyBtn: { backgroundColor: '#0f4c81', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12, marginBottom: 12 },
+  copyBtn: { backgroundColor: '#0d9488', flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12, marginBottom: 12 },
   copyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   newLinkBtn: { paddingVertical: 10 },
   newLinkText: { color: '#64748b', fontSize: 14 },
   displayModeCard: { marginTop: 32, backgroundColor: '#ecfdf5', borderRadius: 12, padding: 18, borderWidth: 1, borderColor: '#6ee7b7' },
+  displayModeRow: { flexDirection: 'row', alignItems: 'center' },
   displayModeTitle: { fontSize: 16, fontWeight: '700', color: '#065f46', marginBottom: 6 },
   displayModeText: { fontSize: 14, color: '#047857', lineHeight: 20 },
 });

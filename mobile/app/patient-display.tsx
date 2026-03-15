@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, StatusBar, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../src/stores/patientStore';
 import { useMedicationStore } from '../src/stores/medicationStore';
 import type { Medication } from '../src/types';
@@ -40,7 +41,7 @@ export default function PatientDisplayScreen() {
       <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: darkMode ? '#1e293b' : '#0f4c81' }]}>
+      <View style={[styles.header, { backgroundColor: darkMode ? '#1e293b' : '#0d9488' }]}>
         <View style={{ flex: 1 }}>
           <Text style={styles.patientName}>{activePatient.name}</Text>
           {activePatient.dateOfBirth ? (
@@ -48,18 +49,20 @@ export default function PatientDisplayScreen() {
           ) : null}
         </View>
         <TouchableOpacity onPress={() => setDarkMode(!darkMode)} style={styles.modeToggle}>
-          <Text style={{ fontSize: 20 }}>{darkMode ? '☀️' : '🌙'}</Text>
+          <Ionicons name={darkMode ? 'sunny-outline' : 'moon-outline'} size={22} color="#fff" />
         </TouchableOpacity>
       </View>
 
       {/* Allergy Banner */}
       {activePatient.allergies.length > 0 ? (
         <View style={styles.allergyBanner}>
-          <Text style={styles.allergyBannerText}>⚠️  ALLERGIES: {activePatient.allergies.join(', ').toUpperCase()}</Text>
+          <Ionicons name="warning-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+          <Text style={styles.allergyBannerText}>ALLERGIES: {activePatient.allergies.join(', ').toUpperCase()}</Text>
         </View>
       ) : (
         <View style={[styles.allergyBanner, styles.noAllergyBanner]}>
-          <Text style={styles.noAllergyText}>✓  No Known Drug Allergies</Text>
+          <Ionicons name="checkmark-circle-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+          <Text style={styles.noAllergyText}>No Known Drug Allergies</Text>
         </View>
       )}
 
@@ -89,13 +92,16 @@ function MedCard({ med, bg, border, text, subText }: { med: Medication; bg: stri
           <Image source={{ uri: med.pillImageUrl }} style={styles.pillImg} />
         ) : (
           <View style={[styles.pillPlaceholder, { backgroundColor: border }]}>
-            <Text style={{ fontSize: 30 }}>💊</Text>
+            <Ionicons name="medical-outline" size={32} color="#0d9488" />
           </View>
         )}
       </View>
       <View style={styles.cardRight}>
         <Text style={[styles.medName, { color: text }]}>{med.drugName}</Text>
         {med.brandName ? <Text style={[styles.brandName, { color: subText }]}>{med.brandName}</Text> : null}
+        {med.indication ? (
+          <Text style={[styles.indicationText, { color: '#0d9488' }]}>For: {med.indication}</Text>
+        ) : null}
         {med.dose || med.form ? (
           <Text style={[styles.doseText, { color: subText }]}>
             {[med.dose, med.form].filter(Boolean).join(' · ')}
@@ -120,24 +126,25 @@ const styles = StyleSheet.create({
   noPatient: { fontSize: 18, fontWeight: '600' },
   header: { paddingTop: 52, paddingHorizontal: 20, paddingBottom: 18, flexDirection: 'row', alignItems: 'center' },
   patientName: { fontSize: 28, fontWeight: '800', color: '#fff' },
-  headerSub: { fontSize: 16, color: '#93c5fd', marginTop: 2 },
+  headerSub: { fontSize: 16, color: '#99f6e4', marginTop: 2 },
   modeToggle: { padding: 8 },
-  allergyBanner: { backgroundColor: '#dc2626', paddingHorizontal: 20, paddingVertical: 12 },
+  allergyBanner: { backgroundColor: '#dc2626', paddingHorizontal: 20, paddingVertical: 12, flexDirection: 'row', alignItems: 'center' },
   allergyBannerText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   noAllergyBanner: { backgroundColor: '#16a34a' },
   noAllergyText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   countText: { fontSize: 14, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 6 },
   list: { paddingHorizontal: 16, paddingBottom: 32 },
-  card: { borderRadius: 14, borderWidth: 1, padding: 16, marginBottom: 12, flexDirection: 'row', gap: 14, alignItems: 'center' },
+  card: { borderRadius: 14, borderWidth: 1, padding: 16, marginBottom: 12, flexDirection: 'row', gap: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   cardLeft: {},
   pillImg: { width: 80, height: 80, borderRadius: 10, resizeMode: 'contain' },
   pillPlaceholder: { width: 80, height: 80, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   cardRight: { flex: 1 },
   medName: { fontSize: 22, fontWeight: '800', lineHeight: 28 },
   brandName: { fontSize: 15, marginTop: 2 },
+  indicationText: { fontSize: 15, marginTop: 4, fontStyle: 'italic' },
   doseText: { fontSize: 16, marginTop: 4 },
-  freqBadge: { backgroundColor: '#dbeafe', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginTop: 8 },
-  freqText: { color: '#1e40af', fontSize: 14, fontWeight: '600' },
+  freqBadge: { backgroundColor: '#ccfbf1', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginTop: 8 },
+  freqText: { color: '#0f766e', fontSize: 14, fontWeight: '600' },
   instructions: { fontSize: 13, marginTop: 6, fontStyle: 'italic' },
   footer: { textAlign: 'center', fontSize: 12, paddingVertical: 16 },
 });

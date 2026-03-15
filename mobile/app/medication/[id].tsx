@@ -37,6 +37,7 @@ export default function MedicationDetailScreen() {
   if (!med) return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text>Not found</Text></View>;
 
   const details = [
+    { label: 'Indication', value: med.indication },
     { label: 'Dose', value: med.dose },
     { label: 'Form', value: med.form },
     { label: 'Route', value: med.route },

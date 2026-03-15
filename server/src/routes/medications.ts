@@ -34,7 +34,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
     if (!existing) { res.status(404).json({ error: 'Medication not found or insufficient permission' }); return; }
 
     const {
-      dose, form, route, frequency, instructions, prescriber,
+      dose, form, route, frequency, instructions, prescriber, indication,
       pharmacy, pillColor, pillShape, pillImprint, pillImageUrl, bottlePhotoUrl,
     } = req.body;
 
@@ -47,6 +47,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
         ...(frequency !== undefined && { frequency }),
         ...(instructions !== undefined && { instructions }),
         ...(prescriber !== undefined && { prescriber }),
+        ...(indication !== undefined && { indication }),
         ...(pharmacy !== undefined && { pharmacy }),
         ...(pillColor !== undefined && { pillColor }),
         ...(pillShape !== undefined && { pillShape }),

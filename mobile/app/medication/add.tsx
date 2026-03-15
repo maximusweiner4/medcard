@@ -27,6 +27,7 @@ export default function AddMedicationScreen() {
   const [frequency, setFrequency] = useState('');
   const [instructions, setInstructions] = useState('');
   const [prescriber, setPrescriber] = useState('');
+  const [indication, setIndication] = useState('');
   const [saving, setSaving] = useState(false);
 
   const debounceTimer = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -40,7 +41,14 @@ export default function AddMedicationScreen() {
       setSearching(true);
       try {
         const candidates = await searchRxNorm(text);
-        setResults(candidates.slice(0, 8));
+        const seen = new Set<string>();
+        const unique = candidates.filter((c) => {
+          const key = c.rxcui + (c.name || '');
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setResults(unique.slice(0, 8));
       } catch {
         setResults([]);
       } finally {
@@ -73,6 +81,7 @@ export default function AddMedicationScreen() {
         frequency: frequency || undefined,
         instructions: instructions.trim() || undefined,
         prescriber: prescriber.trim() || undefined,
+        indication: indication.trim() || undefined,
         pillImageUrl: selected.pillImageUrl,
       });
       router.back();
@@ -98,7 +107,7 @@ export default function AddMedicationScreen() {
         {searching && <ActivityIndicator color="#0f4c81" style={{ marginTop: 12 }} />}
         <FlatList
           data={results}
-          keyExtractor={(item) => item.rxcui}
+          keyExtractor={(item, index) => `${item.rxcui}-${item.name || ''}-${index}`}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.resultRow} onPress={() => handleSelectDrug(item)}>
               <View style={styles.resultInfo}>
@@ -154,6 +163,9 @@ export default function AddMedicationScreen() {
 
       <Text style={styles.label}>Prescriber</Text>
       <TextInput style={styles.input} placeholder="Doctor's name (optional)" value={prescriber} onChangeText={setPrescriber} placeholderTextColor="#94a3b8" />
+
+      <Text style={styles.label}>Indication (Reason for Taking)</Text>
+      <TextInput style={styles.input} placeholder="e.g. High blood pressure, Type 2 diabetes" value={indication} onChangeText={setIndication} placeholderTextColor="#94a3b8" />
 
       <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
         {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Save Medication</Text>}

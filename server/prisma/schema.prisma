@@ -69,6 +69,7 @@ model Medication {
   frequency      String?
   instructions   String?
   prescriber     String?
+  indication     String?
   pharmacy       String?
   pillColor      String?
   pillShape      String?
