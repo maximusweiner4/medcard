@@ -1,9 +1,14 @@
 {
   "name": "medcard",
   "private": true,
-  "workspaces": ["server", "mobile"],
+  "workspaces": [
+    "server"
+  ],
   "scripts": {
     "server": "npm run dev --workspace=server",
     "mobile": "npm run start --workspace=mobile"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10"
   }
 }
