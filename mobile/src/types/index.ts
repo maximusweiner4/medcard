@@ -14,6 +14,7 @@ export interface Patient {
   shareToken: string;
   medications?: Medication[];
   updatedAt: string;
+  caregivers?: CaregiverRelation[];
 }
 
 export interface Medication {
@@ -54,4 +55,12 @@ export interface DrugSearchResult {
   name: string;
   score: number;
   pillImageUrl?: string;
+}
+
+export interface CaregiverRelation {
+  id: string;
+  caregiverId: string;
+  permissionLevel: 'ADMIN' | 'VIEW_ONLY';
+  relationship?: string;
+  caregiver: { id: string; name: string; email: string };
 }

@@ -39,6 +39,11 @@ export const patientsApi = {
   checkInteractions: (id: string) => api.get(`/api/patients/${id}/interactions`),
 };
 
+// ─── Caregivers ───────────────────────────────────────────────────────────────
+export const caregiversApi = {
+  remove: (relationId: string) => api.delete(`/api/caregivers/${relationId}`),
+};
+
 // ─── Medications ──────────────────────────────────────────────────────────────
 export const medicationsApi = {
   get: (id: string) => api.get(`/api/medications/${id}`),
