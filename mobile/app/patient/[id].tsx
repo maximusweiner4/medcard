@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import { patientsApi } from '../../src/services/api';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 export default function PatientProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -15,6 +17,7 @@ export default function PatientProfileScreen() {
   const [interactionLoading, setInteractionLoading] = useState(false);
   const [interactionResult, setInteractionResult] = useState<{ interactions: any[]; message?: string; checkedAt?: string } | null>(null);
   const [interactionModalVisible, setInteractionModalVisible] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   useEffect(() => {
     if (id) fetchMedications(id);
@@ -35,6 +38,26 @@ export default function PatientProfileScreen() {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to check interactions');
     } finally {
       setInteractionLoading(false);
+    }
+  }
+
+  async function exportPdf() {
+    setExportLoading(true);
+    try {
+      const token = (await (await import('../../../src/services/supabase')).supabase.auth.getSession()).data.session?.access_token;
+      const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+      const fileUri = (FileSystem.cacheDirectory ?? '') + 'medications.pdf';
+      const result = await FileSystem.downloadAsync(
+        `${baseUrl}/api/patients/${patient.id}/pdf`,
+        fileUri,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      if (result.status !== 200) throw new Error('Export failed');
+      await Sharing.shareAsync(result.uri, { mimeType: 'application/pdf', dialogTitle: 'Export Medication List' });
+    } catch (err: any) {
+      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
+    } finally {
+      setExportLoading(false);
     }
   }
 
@@ -88,6 +111,16 @@ export default function PatientProfileScreen() {
             <Text style={[styles.actionBtnText, { color: '#7c3aed' }]}>Check Drug Interactions</Text>
           </View>
         )}
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.actionBtn, styles.exportBtn, { opacity: exportLoading ? 0.6 : 1 }]}
+        onPress={exportPdf}
+        disabled={exportLoading}
+      >
+        {exportLoading ? <ActivityIndicator color="#0f4c81" size="small" /> :
+          <Text style={[styles.actionBtnText, { color: '#0f4c81' }]}>Export PDF</Text>
+        }
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.actionBtn} onPress={() => router.push('/medication/add')}>
@@ -168,6 +201,7 @@ const styles = StyleSheet.create({
   shareBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
   actionBtnText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   interactionBtn: { backgroundColor: '#f5f3ff', borderColor: '#c4b5fd' },
+  exportBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
   modalContainer: { flex: 1, backgroundColor: '#f8fafc' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', backgroundColor: '#fff' },
   modalTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },

@@ -12,6 +12,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.45.4",
+    "@types/pdfkit": "^0.17.5",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -19,6 +20,7 @@
     "express": "^4.21.1",
     "helmet": "^8.0.0",
     "morgan": "^1.10.0",
+    "pdfkit": "^0.18.0",
     "qrcode": "^1.5.4",
     "uuid": "^10.0.0"
   },
