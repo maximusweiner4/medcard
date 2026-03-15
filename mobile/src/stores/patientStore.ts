@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { patientsApi } from '../services/api';
 import type { Patient } from '../types';
 
@@ -24,7 +25,15 @@ export const usePatientStore = create<PatientState>((set) => ({
     try {
       const { data } = await patientsApi.list();
       set({ patients: data });
+      await AsyncStorage.setItem('cache:patients', JSON.stringify(data));
     } catch (err: any) {
+      try {
+        const cached = await AsyncStorage.getItem('cache:patients');
+        if (cached) {
+          set({ patients: JSON.parse(cached), error: 'Showing cached data (offline)', loading: false });
+          return;
+        }
+      } catch {}
       set({ error: err?.response?.data?.error || err?.message || 'Failed to load patients' });
     } finally {
       set({ loading: false });
