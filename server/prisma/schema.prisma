@@ -78,6 +78,8 @@ model Medication {
   bottlePhotoUrl String?
   isActive       Boolean  @default(true)
   ndc            String?
+  nextRefillDate  DateTime?
+  pillsRemaining  Int?
   addedById      String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
