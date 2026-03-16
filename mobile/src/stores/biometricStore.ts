@@ -34,7 +34,7 @@ export const useBiometricStore = create<BiometricState>((set) => ({
   unlock: async () => {
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to open MedCard',
+        promptMessage: 'Authenticate to open KinRx',
         cancelLabel: 'Cancel',
         fallbackLabel: 'Use Passcode',
       });

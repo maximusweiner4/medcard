@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "MedCard",
-    "slug": "medcard",
-    "scheme": "medcard",
+    "name": "KinRx",
+    "slug": "kinrx",
+    "scheme": "kinrx",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,9 +13,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kinrx.app",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.kinrx.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -27,7 +27,7 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.inner}>
-        <Text style={styles.logo}>MedCard</Text>
+        <Text style={styles.logo}>KinRx</Text>
         <Text style={styles.tagline}>Create your caregiver account</Text>
 
         <TextInput style={styles.input} placeholder="Your full name" value={name} onChangeText={setName}

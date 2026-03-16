@@ -41,7 +41,7 @@ export default function RootLayout() {
     return (
       <View style={lockStyles.container}>
         <Text style={lockStyles.icon}>🔒</Text>
-        <Text style={lockStyles.title}>MedCard is locked</Text>
+        <Text style={lockStyles.title}>KinRx is locked</Text>
         <Text style={lockStyles.subtitle}>Authenticate to continue</Text>
         <TouchableOpacity style={lockStyles.btn} onPress={unlock}>
           <Text style={lockStyles.btnText}>Use Biometrics</Text>

@@ -24,7 +24,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.inner}>
-        <Text style={styles.logo}>MedCard</Text>
+        <Text style={styles.logo}>KinRx</Text>
         <Text style={styles.tagline}>Your family's medication list, always ready.</Text>
 
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail}

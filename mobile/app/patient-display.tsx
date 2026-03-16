@@ -78,7 +78,7 @@ export default function PatientDisplayScreen() {
       </ScrollView>
 
       <Text style={[styles.footer, { color: subText }]}>
-        MedCard · Last updated {new Date(activePatient.updatedAt).toLocaleDateString('en-US')}
+        KinRx · Last updated {new Date(activePatient.updatedAt).toLocaleDateString('en-US')}
       </Text>
     </View>
   );
