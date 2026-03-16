@@ -26,12 +26,6 @@
     }
   },
   "submit": {
-    "production": {
-      "ios": {
-        "appleId": "max.weiner4@gmail.com",
-        "ascAppId": "",
-        "appleTeamId": ""
-      }
-    }
+    "production": {}
   }
 }
