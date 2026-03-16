@@ -12,7 +12,6 @@ const shareLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests. Please try again later.',
-  keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'unknown',
 });
 
 /** GET /share/:token — public read-only medication list web view */
