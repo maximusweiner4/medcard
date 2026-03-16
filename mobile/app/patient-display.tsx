@@ -83,7 +83,7 @@ export default function PatientDisplayScreen() {
       </ScrollView>
 
       <Text style={[styles.footer, { color: subText }]}>
-        KinRx · Last updated {new Date(activePatient.updatedAt).toLocaleDateString('en-US')}
+        KinRx · Last updated {activePatient.updatedAt ? new Date(activePatient.updatedAt).toLocaleDateString('en-US') : '—'}
       </Text>
     </SafeAreaView>
   );
