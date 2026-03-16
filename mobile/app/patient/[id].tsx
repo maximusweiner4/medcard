@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, ActivityIndicator, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
@@ -25,14 +26,13 @@ export default function PatientProfileScreen() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [caregiverSectionVisible, setCaregiverSectionVisible] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      fetchMedications(id);
-      patientsApi.get(id).then(({ data }) => {
-        if (data.caregivers) setCaregivers(data.caregivers);
-      }).catch(() => {});
-    }
-  }, [id]);
+  useFocusEffect(useCallback(() => {
+    if (!id) return;
+    fetchMedications(id);
+    patientsApi.get(id).then(({ data }) => {
+      if (data.caregivers) setCaregivers(data.caregivers);
+    }).catch(() => {});
+  }, [id]));
 
   const patient = activePatient;
   if (!patient) return null;

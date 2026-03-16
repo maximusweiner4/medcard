@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, AppState, AppStateStatus } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/stores/authStore';
@@ -47,7 +48,7 @@ export default function RootLayout() {
 
   if (isLocked && user) {
     return (
-      <View style={lockStyles.container}>
+      <SafeAreaView style={lockStyles.container}>
         <Text style={lockStyles.icon}>🔒</Text>
         <Text style={lockStyles.title}>KinRx is locked</Text>
         <Text style={lockStyles.subtitle}>Authenticate to continue</Text>
@@ -57,7 +58,7 @@ export default function RootLayout() {
         <TouchableOpacity style={[lockStyles.btn, lockStyles.cancelBtn]} onPress={cancelLock}>
           <Text style={[lockStyles.btnText, lockStyles.cancelBtnText]}>Cancel</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 

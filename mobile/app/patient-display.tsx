@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, StatusBar, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../src/stores/patientStore';
@@ -37,7 +38,7 @@ export default function PatientDisplayScreen() {
   const active = medications.filter((m) => m.isActive);
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
       <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
@@ -80,7 +81,7 @@ export default function PatientDisplayScreen() {
       <Text style={[styles.footer, { color: subText }]}>
         KinRx · Last updated {new Date(activePatient.updatedAt).toLocaleDateString('en-US')}
       </Text>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   noPatient: { fontSize: 18, fontWeight: '600' },
-  header: { paddingTop: 52, paddingHorizontal: 20, paddingBottom: 18, flexDirection: 'row', alignItems: 'center' },
+  header: { paddingTop: 12, paddingHorizontal: 20, paddingBottom: 18, flexDirection: 'row', alignItems: 'center' },
   patientName: { fontSize: 28, fontWeight: '800', color: '#fff' },
   headerSub: { fontSize: 16, color: '#99f6e4', marginTop: 2 },
   modeToggle: { padding: 8 },
