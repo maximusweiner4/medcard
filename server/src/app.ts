@@ -32,6 +32,9 @@ app.use(morgan(':method :url :status :response-time ms', {
 }));
 app.use(express.json());
 
+// Health check (used by Railway)
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
 // Public share route (no auth)
 app.use('/share', shareRouter);
 
