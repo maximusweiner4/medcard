@@ -28,13 +28,19 @@ router.patch('/profile', requireAuth, async (req: AuthRequest, res, next) => {
         res.status(400).json({ error: 'name must be 200 characters or fewer' }); return;
       }
     }
-    if (phone !== undefined && typeof phone === 'string' && phone.length > 30) {
-      res.status(400).json({ error: 'phone must be 30 characters or fewer' }); return;
+    if (phone !== undefined) {
+      if (typeof phone !== 'string') {
+        res.status(400).json({ error: 'phone must be a string' }); return;
+      }
+      if (phone.length > 30) {
+        res.status(400).json({ error: 'phone must be 30 characters or fewer' }); return;
+      }
     }
     const cleanName = name ? stripHtml(name.trim()) : undefined;
+    const cleanPhone = phone ? stripHtml(phone.trim()) : undefined;
     const user = await prisma.user.update({
       where: { id: req.userId },
-      data: { ...(cleanName && { name: cleanName }), ...(phone && { phone: stripHtml(phone.trim()) }) },
+      data: { ...(cleanName && { name: cleanName }), ...(cleanPhone && { phone: cleanPhone }) },
     });
     res.json(user);
   } catch (err) {

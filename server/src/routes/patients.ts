@@ -301,8 +301,13 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
     if (permissionLevel && !validLevels.includes(permissionLevel)) {
       res.status(400).json({ error: 'permissionLevel must be ADMIN or VIEW_ONLY' }); return;
     }
-    if (relationship !== undefined && typeof relationship === 'string' && relationship.length > 100) {
-      res.status(400).json({ error: 'relationship must be 100 characters or fewer' }); return;
+    if (relationship !== undefined && relationship !== null) {
+      if (typeof relationship !== 'string') {
+        res.status(400).json({ error: 'relationship must be a string' }); return;
+      }
+      if (relationship.length > 100) {
+        res.status(400).json({ error: 'relationship must be 100 characters or fewer' }); return;
+      }
     }
     const normalizedEmail = email.trim().toLowerCase();
     if (normalizedEmail.length > 254) {

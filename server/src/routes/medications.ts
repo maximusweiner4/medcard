@@ -68,7 +68,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
           ...(pillShape !== undefined && { pillShape: typeof pillShape === 'string' ? stripHtml(pillShape).slice(0, 50) : pillShape }),
           ...(pillImprint !== undefined && { pillImprint: typeof pillImprint === 'string' ? stripHtml(pillImprint).slice(0, 100) : pillImprint }),
           ...(pillImageUrl !== undefined && { pillImageUrl: typeof pillImageUrl === 'string' ? pillImageUrl.slice(0, 500) : pillImageUrl }),
-          ...(bottlePhotoUrl !== undefined && { bottlePhotoUrl }),
+          ...(bottlePhotoUrl !== undefined && { bottlePhotoUrl: typeof bottlePhotoUrl === 'string' ? bottlePhotoUrl.slice(0, 500) : bottlePhotoUrl }),
           ...(nextRefillDate !== undefined && { nextRefillDate: nextRefillDate ? new Date(nextRefillDate) : null }),
           ...(pillsRemaining !== undefined && { pillsRemaining: typeof pillsRemaining === 'number' ? pillsRemaining : null }),
         },

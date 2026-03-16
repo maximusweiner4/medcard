@@ -15,15 +15,20 @@ interface MedicationState {
   deleteMedication: (id: string) => Promise<void>;
 }
 
+// Track the latest requested patientId to discard stale concurrent fetches
+let _latestMedFetchId = '';
+
 export const useMedicationStore = create<MedicationState>((set) => ({
   medications: [],
   loading: false,
   error: null,
 
   fetchMedications: async (patientId, showStopped = false) => {
-    set({ loading: true, error: null });
+    _latestMedFetchId = patientId;
+    set({ medications: [], loading: true, error: null });
     try {
       const { data } = await patientsApi.getMedications(patientId, showStopped);
+      if (patientId !== _latestMedFetchId) return; // discard stale fetch
       set({ medications: data });
       try { await AsyncStorage.setItem(`cache:medications:${patientId}`, JSON.stringify(data)); } catch {}
     } catch (err: any) {
