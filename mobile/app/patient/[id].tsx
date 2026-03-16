@@ -60,7 +60,7 @@ export default function PatientProfileScreen() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('Not authenticated');
       const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const url = `${BASE_URL}/api/patients/${patient!.id}/pdf?token=${session.access_token}`;
+      const url = `${BASE_URL}/api/patients/${patient!.id}/pdf?token=${encodeURIComponent(session.access_token)}`;
       await Linking.openURL(url);
     } catch (err: any) {
       Alert.alert('Export Error', err?.response?.data?.error || err?.message || 'Failed to export PDF');
