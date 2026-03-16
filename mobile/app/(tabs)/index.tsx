@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal, Keyboard } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,12 +63,12 @@ export default function PatientsScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.card} onPress={() => openPatient(item)}>
               <View style={styles.cardLeft}>
-                <Text style={styles.cardName}>{item.name}</Text>
+                <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
                 <Text style={styles.cardSub}>{item.medications?.length ?? 0} active medications</Text>
                 {item.allergies.length > 0 && (
                   <View style={styles.allergyChip}>
                     <Ionicons name="warning-outline" size={12} color="#dc2626" style={{ marginRight: 4 }} />
-                    <Text style={styles.allergyText}>{item.allergies.join(', ')}</Text>
+                    <Text style={styles.allergyText} numberOfLines={2} ellipsizeMode="tail">{item.allergies.join(', ')}</Text>
                   </View>
                 )}
               </View>
@@ -84,18 +84,20 @@ export default function PatientsScreen() {
       </TouchableOpacity>
 
       <Modal visible={showAdd} animationType="slide" presentationStyle="pageSheet">
-        <View style={styles.modal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>New Patient Profile</Text>
-            <TouchableOpacity onPress={() => { Keyboard.dismiss(); setShowAdd(false); }}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.modal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>New Patient Profile</Text>
+              <TouchableOpacity onPress={() => { Keyboard.dismiss(); setShowAdd(false); }}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
+            </View>
+            <TextInput style={styles.input} placeholder="Full name *" value={name} onChangeText={setName} autoCapitalize="words" placeholderTextColor="#94a3b8" />
+            <TextInput style={styles.input} placeholder="Date of birth (MM/DD/YYYY)" value={dob} onChangeText={setDob} placeholderTextColor="#94a3b8" />
+            <TextInput style={styles.input} placeholder="Allergies (comma-separated, or leave blank)" value={allergies} onChangeText={setAllergies} placeholderTextColor="#94a3b8" />
+            <TouchableOpacity style={[styles.btn, creating && styles.btnDisabled]} onPress={handleCreate} disabled={creating}>
+              <Text style={styles.btnText}>{creating ? 'Creating…' : 'Create Profile'}</Text>
+            </TouchableOpacity>
           </View>
-          <TextInput style={styles.input} placeholder="Full name *" value={name} onChangeText={setName} autoCapitalize="words" placeholderTextColor="#94a3b8" />
-          <TextInput style={styles.input} placeholder="Date of birth (MM/DD/YYYY)" value={dob} onChangeText={setDob} placeholderTextColor="#94a3b8" />
-          <TextInput style={styles.input} placeholder="Allergies (comma-separated, or leave blank)" value={allergies} onChangeText={setAllergies} placeholderTextColor="#94a3b8" />
-          <TouchableOpacity style={[styles.btn, creating && styles.btnDisabled]} onPress={handleCreate} disabled={creating}>
-            <Text style={styles.btnText}>{creating ? 'Creating…' : 'Create Profile'}</Text>
-          </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

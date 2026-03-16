@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView, Switch, useWindowDimensions } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +21,9 @@ export default function ShareScreen() {
         <Ionicons name="share-social-outline" size={64} color="#0d9488" style={{ marginBottom: 16 }} />
         <Text style={styles.emptyTitle}>No patient selected</Text>
         <Text style={styles.emptyText}>Select a patient from the Patients tab first.</Text>
+        <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/(tabs)/')}>
+          <Text style={styles.emptyBtnText}>Go to Patients</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -55,7 +58,7 @@ export default function ShareScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 24 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 24, paddingBottom: 48 }}>
       <Text style={styles.title}>Share {activePatient.name}'s Meds</Text>
       <Text style={styles.subtitle}>
         Generate a read-only link for hospital providers, family members, or anyone who needs to see the medication list. No login required to view.
@@ -120,7 +123,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: '#f8fafc' },
   emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 8 },
-  emptyText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
+  emptyText: { fontSize: 15, color: '#64748b', textAlign: 'center', marginBottom: 24 },
+  emptyBtn: { backgroundColor: '#0d9488', paddingVertical: 12, paddingHorizontal: 28, borderRadius: 999 },
+  emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   title: { fontSize: 24, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#64748b', marginBottom: 28, lineHeight: 20 },
   btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 12, alignItems: 'center' },

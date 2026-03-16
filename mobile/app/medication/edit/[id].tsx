@@ -27,6 +27,7 @@ export default function EditMedicationScreen() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [drugName, setDrugName] = useState('');
   const [dose, setDose] = useState('');
   const [form, setForm] = useState('');
   const [route, setRoute] = useState('');
@@ -43,6 +44,7 @@ export default function EditMedicationScreen() {
     setError(null);
     medicationsApi.get(id)
       .then(({ data }) => {
+        setDrugName(data.drugName ?? '');
         setDose(data.dose ?? '');
         setForm(data.form ?? '');
         setRoute(data.route ?? '');
@@ -100,6 +102,11 @@ export default function EditMedicationScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+      {drugName ? (
+        <View style={styles.drugNameHeader}>
+          <Text style={styles.drugNameHeaderText}>{drugName}</Text>
+        </View>
+      ) : null}
 
       <Text style={styles.label}>Dose</Text>
       <TextInput
@@ -215,6 +222,8 @@ export default function EditMedicationScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+  drugNameHeader: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center' },
+  drugNameHeaderText: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
   label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, marginBottom: 18, color: '#0f172a' },
   freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },

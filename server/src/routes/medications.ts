@@ -40,6 +40,10 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
       nextRefillDate, pillsRemaining,
     } = req.body;
 
+    if (pillsRemaining !== undefined && typeof pillsRemaining === 'number' && pillsRemaining < 0) {
+      res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return;
+    }
+
     // Run medication update + audit log in a single transaction
     const updated = await prisma.$transaction(async (tx) => {
       const result = await tx.medication.update({

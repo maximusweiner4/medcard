@@ -5,13 +5,14 @@ import { prisma } from '../lib/prisma';
 
 const router = Router();
 
-// Rate-limit the public share endpoint to prevent scraping and token brute-force
+// Rate-limit the public share endpoint per IP to prevent scraping and token brute-force
 const shareLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests. Please try again later.',
+  keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'unknown',
 });
 
 /** GET /share/:token — public read-only medication list web view */

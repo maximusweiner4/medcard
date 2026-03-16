@@ -110,7 +110,7 @@ export default function PatientProfileScreen() {
       setCaregiverRelationship('');
       const { data } = await patientsApi.get(patient!.id);
       if (data.caregivers) setCaregivers(data.caregivers);
-      Alert.alert('Success', 'Caregiver invited successfully');
+      Alert.alert('Success', 'Caregiver added to this patient.');
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to invite caregiver');
     } finally {
@@ -119,7 +119,7 @@ export default function PatientProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
       <View style={styles.profileCard}>
         <Ionicons name="person-circle-outline" size={64} color="#0f4c81" style={{ marginBottom: 12 }} />
         <Text style={styles.name}>{patient.name}</Text>
@@ -216,8 +216,8 @@ export default function PatientProfileScreen() {
           {caregivers.map((c) => (
             <View key={c.id} style={styles.caregiverRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.caregiverName}>{c.caregiver.name}</Text>
-                <Text style={styles.caregiverEmail}>{c.caregiver.email}</Text>
+                <Text style={styles.caregiverName} numberOfLines={1}>{c.caregiver?.name ?? 'Unknown'}</Text>
+                <Text style={styles.caregiverEmail} numberOfLines={1}>{c.caregiver?.email ?? ''}</Text>
                 {c.relationship ? <Text style={styles.caregiverRelationship}>{c.relationship}</Text> : null}
               </View>
               <View style={[styles.permBadge, { backgroundColor: c.permissionLevel === 'ADMIN' ? '#ccfbf1' : '#f1f5f9' }]}>
@@ -225,7 +225,7 @@ export default function PatientProfileScreen() {
                   {c.permissionLevel === 'ADMIN' ? 'Admin' : 'View Only'}
                 </Text>
               </View>
-              <TouchableOpacity style={styles.removeBtn} onPress={() => removeCaregiver(c.id, c.caregiver.name)}>
+              <TouchableOpacity style={styles.removeBtn} onPress={() => removeCaregiver(c.id, c.caregiver?.name ?? 'this caregiver')}>
                 <Ionicons name="close-circle-outline" size={20} color="#dc2626" />
               </TouchableOpacity>
             </View>

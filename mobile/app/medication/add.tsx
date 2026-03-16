@@ -161,7 +161,7 @@ export default function AddMedicationScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
       <View style={styles.selectedDrug}>
         {selected?.pillImageUrl ? (
           <Image source={{ uri: selected.pillImageUrl }} style={styles.pillImg} />

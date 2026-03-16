@@ -171,6 +171,7 @@ export default function MedicationDetailScreen() {
                 UPDATED: { bg: '#dbeafe', text: '#1e40af' },
                 STOPPED: { bg: '#fee2e2', text: '#dc2626' },
                 RESTARTED: { bg: '#dcfce7', text: '#16a34a' },
+                DELETED: { bg: '#f1f5f9', text: '#475569' },
               };
               const colors = changeColors[log.changeType] ?? { bg: '#f1f5f9', text: '#475569' };
               return (
@@ -198,11 +199,16 @@ export default function MedicationDetailScreen() {
             <Text style={styles.stopBtnText}>Stop Medication</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={[styles.restartBtn, { opacity: actionLoading ? 0.6 : 1 }]} disabled={actionLoading} onPress={async () => {
-            setActionLoading(true);
-            try { await restartMedication(id); }
-            catch (e: any) { Alert.alert('Error', e?.message || 'Failed to restart medication'); }
-            finally { setActionLoading(false); }
+          <TouchableOpacity style={[styles.restartBtn, { opacity: actionLoading ? 0.6 : 1 }]} disabled={actionLoading} onPress={() => {
+            Alert.alert('Restart Medication', `Mark "${med?.drugName}" as active again?`, [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Restart', onPress: async () => {
+                setActionLoading(true);
+                try { await restartMedication(id); }
+                catch (e: any) { Alert.alert('Error', e?.message || 'Failed to restart medication'); }
+                finally { setActionLoading(false); }
+              }},
+            ]);
           }}>
             <Text style={styles.restartBtnText}>Restart Medication</Text>
           </TouchableOpacity>

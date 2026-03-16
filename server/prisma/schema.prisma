@@ -22,6 +22,7 @@ enum ChangeType {
   UPDATED
   STOPPED
   RESTARTED
+  DELETED
 }
 
 model User {

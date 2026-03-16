@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,9 +16,15 @@ export default function MedicationsScreen() {
   const { medications, fetchMedications, stopMedication, loading, error } = useMedicationStore();
   const [showStopped, setShowStopped] = useState(false);
   const router = useRouter();
+  const fetchIdRef = useRef(0);
 
   useFocusEffect(useCallback(() => {
-    if (activePatient) fetchMedications(activePatient.id, showStopped);
+    if (!activePatient) return;
+    const fetchId = ++fetchIdRef.current;
+    fetchMedications(activePatient.id, showStopped).then(() => {
+      // If a newer fetch started while this one was in flight, ignore (store already has fresher data)
+      if (fetchId < fetchIdRef.current) return;
+    }).catch(() => {});
   }, [activePatient, showStopped]));
 
   if (!activePatient) {
@@ -27,6 +33,9 @@ export default function MedicationsScreen() {
         <Ionicons name="medical-outline" size={64} color="#0d9488" style={{ marginBottom: 16 }} />
         <Text style={styles.emptyTitle}>No patient selected</Text>
         <Text style={styles.emptyText}>Go to the Patients tab and select a patient first.</Text>
+        <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/(tabs)/')}>
+          <Text style={styles.emptyBtnText}>Go to Patients</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -61,10 +70,10 @@ export default function MedicationsScreen() {
         )}
       </View>
       <View style={styles.cardInfo}>
-        <Text style={styles.drugName}>{item.drugName}</Text>
-        {item.brandName ? <Text style={styles.brandName}>{item.brandName}</Text> : null}
-        <Text style={styles.doseText}>{[item.dose, item.form, item.route].filter(Boolean).join(' · ')}</Text>
-        {item.indication ? <Text style={styles.indicationText}>{item.indication}</Text> : null}
+        <Text style={styles.drugName} numberOfLines={1} ellipsizeMode="tail">{item.drugName}</Text>
+        {item.brandName ? <Text style={styles.brandName} numberOfLines={1}>{item.brandName}</Text> : null}
+        <Text style={styles.doseText} numberOfLines={1}>{[item.dose, item.form, item.route].filter(Boolean).join(' · ')}</Text>
+        {item.indication ? <Text style={styles.indicationText} numberOfLines={1} ellipsizeMode="tail">{item.indication}</Text> : null}
         {item.frequency ? <View style={styles.freqChip}><Text style={styles.freqText}>{item.frequency}</Text></View> : null}
         {item.nextRefillDate && daysUntil(item.nextRefillDate) <= 7 && daysUntil(item.nextRefillDate) >= 0 && (
           <View style={styles.refillBadge}>
@@ -116,7 +125,9 @@ const styles = StyleSheet.create({
   count: { color: '#99f6e4', fontSize: 14 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: '#f8fafc' },
   emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 8 },
-  emptyText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
+  emptyText: { fontSize: 15, color: '#64748b', textAlign: 'center', marginBottom: 24 },
+  emptyBtn: { backgroundColor: '#0d9488', paddingVertical: 12, paddingHorizontal: 28, borderRadius: 999 },
+  emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   cardStopped: { opacity: 0.5 },
   cardLeft: { marginRight: 12 },

@@ -42,12 +42,28 @@ router.post('/', async (req: AuthRequest, res, next) => {
     if (!name || typeof name !== 'string' || !name.trim()) {
       res.status(400).json({ error: 'name is required' }); return;
     }
+    if (name.trim().length > 200) {
+      res.status(400).json({ error: 'name must be 200 characters or fewer' }); return;
+    }
+    if (Array.isArray(allergies)) {
+      if (allergies.length > 30) {
+        res.status(400).json({ error: 'Too many allergies (max 30)' }); return;
+      }
+      for (const a of allergies) {
+        if (typeof a === 'string' && a.length > 100) {
+          res.status(400).json({ error: 'Each allergy must be 100 characters or fewer' }); return;
+        }
+      }
+    }
 
     // Validate dateOfBirth if provided
     if (dateOfBirth !== undefined) {
       const parsed = new Date(dateOfBirth);
       if (isNaN(parsed.getTime())) {
         res.status(400).json({ error: 'Invalid dateOfBirth format' }); return;
+      }
+      if (parsed > new Date()) {
+        res.status(400).json({ error: 'dateOfBirth cannot be in the future' }); return;
       }
     }
 
@@ -99,10 +115,33 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
 
     const { name, dateOfBirth, allergies } = req.body;
 
+    if (name !== undefined) {
+      if (typeof name !== 'string' || !name.trim()) {
+        res.status(400).json({ error: 'name cannot be empty' }); return;
+      }
+      if (name.trim().length > 200) {
+        res.status(400).json({ error: 'name must be 200 characters or fewer' }); return;
+      }
+    }
+
     if (dateOfBirth !== undefined) {
       const parsed = new Date(dateOfBirth);
       if (isNaN(parsed.getTime())) {
         res.status(400).json({ error: 'Invalid dateOfBirth format' }); return;
+      }
+      if (parsed > new Date()) {
+        res.status(400).json({ error: 'dateOfBirth cannot be in the future' }); return;
+      }
+    }
+
+    if (Array.isArray(allergies)) {
+      if (allergies.length > 30) {
+        res.status(400).json({ error: 'Too many allergies (max 30)' }); return;
+      }
+      for (const a of allergies) {
+        if (typeof a === 'string' && a.length > 100) {
+          res.status(400).json({ error: 'Each allergy must be 100 characters or fewer' }); return;
+        }
       }
     }
 
@@ -176,36 +215,44 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
     if (!drugName || typeof drugName !== 'string' || !drugName.trim()) {
       res.status(400).json({ error: 'drugName is required' }); return;
     }
+    const cleanDrugName = stripHtml(drugName.trim());
+    if (!cleanDrugName) {
+      res.status(400).json({ error: 'drugName is required' }); return;
+    }
+    if (pillsRemaining !== undefined && typeof pillsRemaining === 'number' && pillsRemaining < 0) {
+      res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return;
+    }
 
-    const medication = await prisma.medication.create({
-      data: {
-        patientId: req.params.id,
-        rxcui, ndc,
-        drugName: stripHtml(drugName),
-        brandName: brandName ? stripHtml(brandName) : undefined,
-        dose: dose ? stripHtml(dose) : undefined,
-        form: form ? stripHtml(form) : undefined,
-        route: route ? stripHtml(route) : undefined,
-        frequency: frequency ? stripHtml(frequency) : undefined,
-        instructions: instructions ? stripHtml(instructions) : undefined,
-        prescriber: prescriber ? stripHtml(prescriber) : undefined,
-        indication: indication ? stripHtml(indication) : undefined,
-        pharmacy: pharmacy ? stripHtml(pharmacy) : undefined,
-        pillColor, pillShape, pillImprint, pillImageUrl, bottlePhotoUrl,
-        ...(nextRefillDate && { nextRefillDate: new Date(nextRefillDate) }),
-        ...(pillsRemaining !== undefined && typeof pillsRemaining === 'number' && { pillsRemaining }),
-        addedById: req.userId,
-      },
-    });
-
-    // Log change
-    await prisma.medicationChangeLog.create({
-      data: {
-        medicationId: medication.id,
-        changedById: req.userId!,
-        changeType: 'ADDED',
-        newValues: medication as any,
-      },
+    const medication = await prisma.$transaction(async (tx) => {
+      const created = await tx.medication.create({
+        data: {
+          patientId: req.params.id,
+          rxcui, ndc,
+          drugName: cleanDrugName,
+          brandName: brandName ? stripHtml(brandName) : undefined,
+          dose: dose ? stripHtml(dose) : undefined,
+          form: form ? stripHtml(form) : undefined,
+          route: route ? stripHtml(route) : undefined,
+          frequency: frequency ? stripHtml(frequency) : undefined,
+          instructions: instructions ? stripHtml(instructions) : undefined,
+          prescriber: prescriber ? stripHtml(prescriber) : undefined,
+          indication: indication ? stripHtml(indication) : undefined,
+          pharmacy: pharmacy ? stripHtml(pharmacy) : undefined,
+          pillColor, pillShape, pillImprint, pillImageUrl, bottlePhotoUrl,
+          ...(nextRefillDate && { nextRefillDate: new Date(nextRefillDate) }),
+          ...(pillsRemaining !== undefined && typeof pillsRemaining === 'number' && { pillsRemaining }),
+          addedById: req.userId,
+        },
+      });
+      await tx.medicationChangeLog.create({
+        data: {
+          medicationId: created.id,
+          changedById: req.userId!,
+          changeType: 'ADDED',
+          newValues: created as any,
+        },
+      });
+      return created;
     });
 
     res.status(201).json(medication);
@@ -228,6 +275,9 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
     if (permissionLevel && !validLevels.includes(permissionLevel)) {
       res.status(400).json({ error: 'permissionLevel must be ADMIN or VIEW_ONLY' }); return;
     }
+    if (relationship !== undefined && typeof relationship === 'string' && relationship.length > 100) {
+      res.status(400).json({ error: 'relationship must be 100 characters or fewer' }); return;
+    }
     const normalizedEmail = email.trim().toLowerCase();
     // Basic email format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
@@ -237,14 +287,15 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
     const invitedUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!invitedUser) { res.status(404).json({ error: 'No account found for that email. Ask them to sign up first.' }); return; }
 
+    const cleanRelationship = relationship ? stripHtml(relationship.trim()) : undefined;
     const relation = await prisma.caregiverPatient.upsert({
       where: { caregiverId_patientId: { caregiverId: invitedUser.id, patientId: req.params.id } },
-      update: { permissionLevel: permissionLevel || 'VIEW_ONLY', relationship },
+      update: { permissionLevel: permissionLevel || 'VIEW_ONLY', relationship: cleanRelationship },
       create: {
         caregiverId: invitedUser.id,
         patientId: req.params.id,
         permissionLevel: permissionLevel || 'VIEW_ONLY',
-        relationship,
+        relationship: cleanRelationship,
       },
     });
     res.status(201).json(relation);

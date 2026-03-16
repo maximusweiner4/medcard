@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
+import { stripHtml } from '../lib/sanitize';
 
 const router = Router();
 router.use(requireAuth);
@@ -22,11 +23,14 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
     if (permissionLevel && !validLevels.includes(permissionLevel)) {
       res.status(400).json({ error: 'permissionLevel must be ADMIN or VIEW_ONLY' }); return;
     }
+    if (relationship !== undefined && typeof relationship === 'string' && relationship.length > 100) {
+      res.status(400).json({ error: 'relationship must be 100 characters or fewer' }); return;
+    }
     const updated = await prisma.caregiverPatient.update({
       where: { id: req.params.id },
       data: {
         ...(permissionLevel && { permissionLevel }),
-        ...(relationship !== undefined && { relationship }),
+        ...(relationship !== undefined && { relationship: relationship ? stripHtml(relationship) : relationship }),
       },
     });
     res.json(updated);
@@ -44,7 +48,14 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
     });
     if (!isAdmin) { res.status(403).json({ error: 'Admin permission required' }); return; }
 
-    await prisma.caregiverPatient.delete({ where: { id: req.params.id } });
+    // Deactivate any share links this caregiver created for this patient
+    await prisma.$transaction([
+      prisma.shareLink.updateMany({
+        where: { patientId: relation.patientId, createdById: relation.caregiverId },
+        data: { isActive: false },
+      }),
+      prisma.caregiverPatient.delete({ where: { id: req.params.id } }),
+    ]);
     res.status(204).end();
   } catch (err) { next(err); }
 });
