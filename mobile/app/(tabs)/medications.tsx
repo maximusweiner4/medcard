@@ -81,11 +81,22 @@ export default function MedicationsScreen() {
         <Text style={styles.doseText} numberOfLines={1}>{[item.dose, item.form, item.route].filter(Boolean).join(' · ')}</Text>
         {item.indication ? <Text style={styles.indicationText} numberOfLines={1} ellipsizeMode="tail">{item.indication}</Text> : null}
         {item.frequency ? <View style={styles.freqChip}><Text style={styles.freqText}>{item.frequency}</Text></View> : null}
-        {item.nextRefillDate && daysUntil(item.nextRefillDate) <= 7 && daysUntil(item.nextRefillDate) >= 0 && (
-          <View style={styles.refillBadge}>
-            <Text style={styles.refillText}>Refill in {daysUntil(item.nextRefillDate)}d</Text>
-          </View>
-        )}
+        {(() => {
+          if (!item.nextRefillDate) return null;
+          const d = daysUntil(item.nextRefillDate);
+          if (isNaN(d)) return null;
+          if (d < 0) return (
+            <View style={[styles.refillBadge, { backgroundColor: '#dc2626' }]}>
+              <Text style={styles.refillText}>Refill Overdue</Text>
+            </View>
+          );
+          if (d <= 7) return (
+            <View style={styles.refillBadge}>
+              <Text style={styles.refillText}>Refill in {d}d</Text>
+            </View>
+          );
+          return null;
+        })()}
       </View>
       {item.isActive && (
         <TouchableOpacity

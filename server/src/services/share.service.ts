@@ -30,7 +30,7 @@ export async function validateShareToken(token: string): Promise<string | null> 
   if (!link || !link.isActive) return null;
   if (link.expiresAt && link.expiresAt < new Date()) return null;
 
-  await prisma.shareLink.update({
+  await prisma.shareLink.updateMany({
     where: { token },
     data: { accessCount: { increment: 1 } },
   });

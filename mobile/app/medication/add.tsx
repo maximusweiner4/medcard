@@ -115,7 +115,7 @@ export default function AddMedicationScreen() {
         indication: indication.trim() || undefined,
         pillImageUrl: selected.pillImageUrl,
         nextRefillDate: parseDateInput(nextRefillDate) || undefined,
-        pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim()) : undefined,
+        pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim(), 10) : undefined,
       });
       router.back();
     } catch (err: any) {

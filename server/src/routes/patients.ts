@@ -54,7 +54,10 @@ router.post('/', async (req: AuthRequest, res, next) => {
         res.status(400).json({ error: 'Too many allergies (max 30)' }); return;
       }
       for (const a of allergies) {
-        if (typeof a === 'string' && a.length > 100) {
+        if (typeof a !== 'string') {
+          res.status(400).json({ error: 'Each allergy must be a text value' }); return;
+        }
+        if (a.length > 100) {
           res.status(400).json({ error: 'Each allergy must be 100 characters or fewer' }); return;
         }
       }
@@ -148,7 +151,10 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
         res.status(400).json({ error: 'Too many allergies (max 30)' }); return;
       }
       for (const a of allergies) {
-        if (typeof a === 'string' && a.length > 100) {
+        if (typeof a !== 'string') {
+          res.status(400).json({ error: 'Each allergy must be a text value' }); return;
+        }
+        if (a.length > 100) {
           res.status(400).json({ error: 'Each allergy must be 100 characters or fewer' }); return;
         }
       }

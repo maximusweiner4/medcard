@@ -33,7 +33,7 @@ router.patch('/profile', requireAuth, async (req: AuthRequest, res, next) => {
     const cleanName = name ? stripHtml(name.trim()) : undefined;
     const user = await prisma.user.update({
       where: { id: req.userId },
-      data: { ...(cleanName && { name: cleanName }), ...(phone && { phone: phone.trim() }) },
+      data: { ...(cleanName && { name: cleanName }), ...(phone && { phone: stripHtml(phone.trim()) }) },
     });
     res.json(user);
   } catch (err) {
