@@ -40,6 +40,12 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
       nextRefillDate, pillsRemaining,
     } = req.body;
 
+    const textFields = ['dose', 'form', 'route', 'frequency', 'instructions', 'prescriber', 'indication', 'pharmacy'] as const;
+    for (const field of textFields) {
+      if (req.body[field] !== undefined && req.body[field] !== null && typeof req.body[field] !== 'string') {
+        res.status(400).json({ error: `${field} must be a string` }); return;
+      }
+    }
     if (pillsRemaining !== undefined && pillsRemaining !== null && typeof pillsRemaining === 'number') {
       if (pillsRemaining < 0) { res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return; }
       if (!Number.isInteger(pillsRemaining)) { res.status(400).json({ error: 'pillsRemaining must be a whole number' }); return; }
