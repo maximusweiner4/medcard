@@ -2,6 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { prisma } from '../lib/prisma';
 
+// Startup env diagnostic (safe — logs presence, not values)
+console.log('[auth] env check:', {
+  SUPABASE_URL: !!process.env.SUPABASE_URL,
+  SUPABASE_URL_len: process.env.SUPABASE_URL?.length ?? 0,
+  SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  NODE_ENV: process.env.NODE_ENV,
+});
+
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
