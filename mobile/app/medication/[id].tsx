@@ -217,7 +217,7 @@ export default function MedicationDetailScreen() {
             <Text style={styles.restartBtnText}>Restart Medication</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.deleteBtn} onPress={confirmDelete}>
+        <TouchableOpacity style={[styles.deleteBtn, actionLoading && { opacity: 0.4 }]} onPress={confirmDelete} disabled={actionLoading}>
           <Text style={styles.deleteBtnText}>Delete</Text>
         </TouchableOpacity>
       </View>

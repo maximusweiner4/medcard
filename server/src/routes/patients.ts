@@ -238,6 +238,12 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
       if (pillsRemaining < 0) { res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return; }
       if (!Number.isInteger(pillsRemaining)) { res.status(400).json({ error: 'pillsRemaining must be a whole number' }); return; }
     }
+    if (nextRefillDate !== undefined && nextRefillDate !== null) {
+      const parsed = new Date(nextRefillDate);
+      if (isNaN(parsed.getTime())) {
+        res.status(400).json({ error: 'Invalid nextRefillDate format' }); return;
+      }
+    }
 
     const medication = await prisma.$transaction(async (tx) => {
       const created = await tx.medication.create({
