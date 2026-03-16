@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, StatusBar, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../src/stores/patientStore';
 import { useMedicationStore } from '../src/stores/medicationStore';
@@ -16,6 +16,7 @@ export default function PatientDisplayScreen() {
   const { activePatient } = usePatientStore();
   const { medications, fetchMedications } = useMedicationStore();
   const [darkMode, setDarkMode] = useState(false);
+  const router = useRouter();
 
   const bg = darkMode ? '#0f172a' : '#ffffff';
   const text = darkMode ? '#f8fafc' : '#0f172a';
@@ -31,6 +32,9 @@ export default function PatientDisplayScreen() {
     return (
       <View style={[styles.center, { backgroundColor: bg }]}>
         <Text style={[styles.noPatient, { color: text }]}>No patient selected</Text>
+        <TouchableOpacity onPress={() => router.replace('/(tabs)/')} style={{ marginTop: 16 }}>
+          <Text style={{ color: '#0d9488', fontWeight: '600', fontSize: 15 }}>Go to Patients</Text>
+        </TouchableOpacity>
       </View>
     );
   }

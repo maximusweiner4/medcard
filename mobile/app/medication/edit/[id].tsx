@@ -53,7 +53,9 @@ export default function EditMedicationScreen() {
         setPrescriber(data.prescriber ?? '');
         setIndication(data.indication ?? '');
         setPharmacy(data.pharmacy ?? '');
-        setNextRefillDate(data.nextRefillDate ?? '');
+        setNextRefillDate(data.nextRefillDate
+          ? new Date(data.nextRefillDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+          : '');
         setPillsRemaining(data.pillsRemaining != null ? String(data.pillsRemaining) : '');
       })
       .catch(() => setError('Failed to load medication. Tap to retry.'))
@@ -136,7 +138,7 @@ export default function EditMedicationScreen() {
       />
 
       <Text style={styles.label}>Frequency</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 18 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator style={{ marginBottom: 18 }}>
         {FREQUENCIES.map((f) => (
           <TouchableOpacity
             key={f}

@@ -38,6 +38,7 @@ export default function AddMedicationScreen() {
   // Details form
   const [dose, setDose] = useState('');
   const [form, setForm] = useState('');
+  const [route, setRoute] = useState('');
   const [frequency, setFrequency] = useState('');
   const [instructions, setInstructions] = useState('');
   const [prescriber, setPrescriber] = useState('');
@@ -107,6 +108,7 @@ export default function AddMedicationScreen() {
         drugName: selected.name,
         dose: dose.trim() || undefined,
         form: form.trim() || undefined,
+        route: route.trim() || undefined,
         frequency: frequency || undefined,
         instructions: instructions.trim() || undefined,
         prescriber: prescriber.trim() || undefined,
@@ -182,8 +184,11 @@ export default function AddMedicationScreen() {
       <Text style={styles.label}>Form</Text>
       <TextInput style={styles.input} placeholder="e.g. Tablet, Capsule, Liquid" value={form} onChangeText={setForm} placeholderTextColor="#94a3b8" />
 
+      <Text style={styles.label}>Route</Text>
+      <TextInput style={styles.input} placeholder="e.g. Oral, Topical, Inhaled" value={route} onChangeText={setRoute} placeholderTextColor="#94a3b8" />
+
       <Text style={styles.label}>Frequency</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator style={{ marginBottom: 14 }}>
         {FREQUENCIES.map((f) => (
           <TouchableOpacity key={f} style={[styles.freqOption, frequency === f && styles.freqSelected]} onPress={() => setFrequency(f)}>
             <Text style={[styles.freqOptionText, frequency === f && styles.freqSelectedText]}>{f}</Text>

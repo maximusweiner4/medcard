@@ -25,13 +25,15 @@ export default function PatientProfileScreen() {
   const [caregiverRelationship, setCaregiverRelationship] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [caregiverSectionVisible, setCaregiverSectionVisible] = useState(false);
+  const [caregiverLoadError, setCaregiverLoadError] = useState<string | null>(null);
 
   useFocusEffect(useCallback(() => {
     if (!id) return;
     fetchMedications(id);
+    setCaregiverLoadError(null);
     patientsApi.get(id).then(({ data }) => {
       if (data.caregivers) setCaregivers(data.caregivers);
-    }).catch(() => {});
+    }).catch(() => { setCaregiverLoadError('Failed to load caregivers.'); });
   }, [id]));
 
   const patient = activePatient;
@@ -210,9 +212,11 @@ export default function PatientProfileScreen() {
 
       {caregiverSectionVisible && (
         <View style={styles.caregiverSection}>
-          {caregivers.length === 0 && (
+          {caregiverLoadError ? (
+            <Text style={styles.emptyCaregiverText}>{caregiverLoadError}</Text>
+          ) : caregivers.length === 0 ? (
             <Text style={styles.emptyCaregiverText}>No caregivers added yet.</Text>
-          )}
+          ) : null}
           {caregivers.map((c) => (
             <View key={c.id} style={styles.caregiverRow}>
               <View style={{ flex: 1 }}>

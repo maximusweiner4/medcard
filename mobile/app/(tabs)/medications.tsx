@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ export default function MedicationsScreen() {
   const { activePatient } = usePatientStore();
   const { medications, fetchMedications, stopMedication, loading, error } = useMedicationStore();
   const [showStopped, setShowStopped] = useState(false);
+  const [stoppingId, setStoppingId] = useState<string | null>(null);
   const router = useRouter();
   const fetchIdRef = useRef(0);
 
@@ -53,7 +54,12 @@ export default function MedicationsScreen() {
   function confirmStop(med: Medication) {
     Alert.alert('Stop Medication', `Mark "${med.drugName}" as stopped?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Stop', style: 'destructive', onPress: () => stopMedication(med.id) },
+      { text: 'Stop', style: 'destructive', onPress: async () => {
+        setStoppingId(med.id);
+        try { await stopMedication(med.id); }
+        catch (e: any) { Alert.alert('Error', e?.message || 'Failed to stop medication'); }
+        finally { setStoppingId(null); }
+      }},
     ]);
   }
 
@@ -82,8 +88,15 @@ export default function MedicationsScreen() {
         )}
       </View>
       {item.isActive && (
-        <TouchableOpacity style={styles.stopBtn} onPress={() => confirmStop(item)}>
-          <Text style={styles.stopBtnText}>Stop</Text>
+        <TouchableOpacity
+          style={[styles.stopBtn, stoppingId === item.id && { opacity: 0.5 }]}
+          onPress={() => confirmStop(item)}
+          disabled={stoppingId !== null}
+        >
+          {stoppingId === item.id
+            ? <ActivityIndicator size="small" color="#dc2626" />
+            : <Text style={styles.stopBtnText}>Stop</Text>
+          }
         </TouchableOpacity>
       )}
     </TouchableOpacity>

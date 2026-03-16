@@ -39,10 +39,14 @@ router.get('/', async (req: AuthRequest, res, next) => {
 router.post('/', async (req: AuthRequest, res, next) => {
   try {
     const { name, dateOfBirth, allergies } = req.body;
-    if (!name || typeof name !== 'string' || !name.trim()) {
+    if (!name || typeof name !== 'string') {
       res.status(400).json({ error: 'name is required' }); return;
     }
-    if (name.trim().length > 200) {
+    const cleanPatientName = stripHtml(name.trim());
+    if (!cleanPatientName) {
+      res.status(400).json({ error: 'name is required' }); return;
+    }
+    if (cleanPatientName.length > 200) {
       res.status(400).json({ error: 'name must be 200 characters or fewer' }); return;
     }
     if (Array.isArray(allergies)) {
@@ -71,7 +75,7 @@ router.post('/', async (req: AuthRequest, res, next) => {
     const patient = await prisma.$transaction(async (tx) => {
       const created = await tx.patient.create({
         data: {
-          name: stripHtml(name.trim()),
+          name: cleanPatientName,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
           allergies: Array.isArray(allergies) ? allergies.map(stripHtml) : [],
           primaryCaregiverId: req.userId!,
@@ -114,12 +118,17 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
     if (!caregiver) { res.status(403).json({ error: 'Admin permission required' }); return; }
 
     const { name, dateOfBirth, allergies } = req.body;
+    let cleanPatchName: string | undefined;
 
     if (name !== undefined) {
-      if (typeof name !== 'string' || !name.trim()) {
+      if (typeof name !== 'string') {
         res.status(400).json({ error: 'name cannot be empty' }); return;
       }
-      if (name.trim().length > 200) {
+      cleanPatchName = stripHtml(name).trim();
+      if (!cleanPatchName) {
+        res.status(400).json({ error: 'name cannot be empty' }); return;
+      }
+      if (cleanPatchName.length > 200) {
         res.status(400).json({ error: 'name must be 200 characters or fewer' }); return;
       }
     }
@@ -148,7 +157,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
     const patient = await prisma.patient.update({
       where: { id: req.params.id },
       data: {
-        ...(name && { name: stripHtml(name) }),
+        ...(cleanPatchName !== undefined && { name: cleanPatchName }),
         ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
         ...(allergies !== undefined && { allergies: Array.isArray(allergies) ? allergies.map(stripHtml) : [] }),
       },

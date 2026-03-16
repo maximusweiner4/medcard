@@ -30,13 +30,26 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
   // Look up user record — only create if not found (avoids noisy upsert write on every request)
   let dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        supabaseId: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-      },
-    });
+    try {
+      dbUser = await prisma.user.create({
+        data: {
+          supabaseId: user.id,
+          email: user.email || '',
+          name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        },
+      });
+    } catch (e: any) {
+      if (e.code === 'P2002') {
+        // Concurrent first-login — another request already created the record
+        dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+      } else {
+        throw e;
+      }
+    }
+  }
+  if (!dbUser) {
+    res.status(500).json({ error: 'Authentication failed' });
+    return;
   }
 
   req.userId = dbUser.id;
