@@ -4,10 +4,15 @@ import { requireAuth, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 
 const router = Router();
-router.use(requireAuth);
 
-/** GET /api/patients/:id/pdf — generate medication list PDF */
+/** GET /api/patients/:id/pdf — generate medication list PDF
+ *  Accepts JWT via Authorization header OR ?token= query param (for browser download) */
 router.get('/patients/:id/pdf', async (req: AuthRequest, res, next) => {
+  // Allow token via query param so PDF can be opened directly in browser
+  if (req.query.token && !req.headers.authorization) {
+    req.headers.authorization = `Bearer ${req.query.token}`;
+  }
+  await requireAuth(req, res, async () => {
   try {
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId },
@@ -101,6 +106,7 @@ router.get('/patients/:id/pdf', async (req: AuthRequest, res, next) => {
 
     doc.end();
   } catch (err) { next(err); }
+  });
 });
 
 export default router;
