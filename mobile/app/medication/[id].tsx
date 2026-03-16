@@ -195,7 +195,7 @@ export default function MedicationDetailScreen() {
       )}
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/medication/edit/${id}`)}>
+        <TouchableOpacity style={[styles.editBtn, actionLoading && { opacity: 0.6 }]} onPress={() => router.push(`/medication/edit/${id}`)} disabled={actionLoading}>
           <Text style={styles.editBtnText}>Edit Medication</Text>
         </TouchableOpacity>
         {med.isActive ? (

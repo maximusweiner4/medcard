@@ -101,6 +101,13 @@ export default function AddMedicationScreen() {
       Alert.alert('Please enter at least a dose or frequency');
       return;
     }
+    if (pillsRemaining.trim()) {
+      const n = parseInt(pillsRemaining.trim(), 10);
+      if (isNaN(n) || n < 0 || String(n) !== pillsRemaining.trim()) {
+        Alert.alert('Pills Remaining must be a non-negative whole number');
+        return;
+      }
+    }
     setSaving(true);
     try {
       await addMedication(activePatient.id, {

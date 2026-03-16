@@ -40,8 +40,9 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
       nextRefillDate, pillsRemaining,
     } = req.body;
 
-    if (pillsRemaining !== undefined && typeof pillsRemaining === 'number' && pillsRemaining < 0) {
-      res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return;
+    if (pillsRemaining !== undefined && pillsRemaining !== null && typeof pillsRemaining === 'number') {
+      if (pillsRemaining < 0) { res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return; }
+      if (!Number.isInteger(pillsRemaining)) { res.status(400).json({ error: 'pillsRemaining must be a whole number' }); return; }
     }
 
     // Run medication update + audit log in a single transaction

@@ -80,7 +80,7 @@ router.post('/', async (req: AuthRequest, res, next) => {
         data: {
           name: cleanPatientName,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          allergies: Array.isArray(allergies) ? allergies.map(stripHtml) : [],
+          allergies: Array.isArray(allergies) ? allergies.map(stripHtml).filter(Boolean) : [],
           primaryCaregiverId: req.userId!,
         },
       });
@@ -165,7 +165,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
       data: {
         ...(cleanPatchName !== undefined && { name: cleanPatchName }),
         ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
-        ...(allergies !== undefined && { allergies: Array.isArray(allergies) ? allergies.map(stripHtml) : [] }),
+        ...(allergies !== undefined && { allergies: Array.isArray(allergies) ? allergies.map(stripHtml).filter(Boolean) : [] }),
       },
     });
     res.json(patient);
@@ -234,8 +234,9 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
     if (!cleanDrugName) {
       res.status(400).json({ error: 'drugName is required' }); return;
     }
-    if (pillsRemaining !== undefined && typeof pillsRemaining === 'number' && pillsRemaining < 0) {
-      res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return;
+    if (pillsRemaining !== undefined && pillsRemaining !== null && typeof pillsRemaining === 'number') {
+      if (pillsRemaining < 0) { res.status(400).json({ error: 'pillsRemaining cannot be negative' }); return; }
+      if (!Number.isInteger(pillsRemaining)) { res.status(400).json({ error: 'pillsRemaining must be a whole number' }); return; }
     }
 
     const medication = await prisma.$transaction(async (tx) => {
@@ -294,6 +295,9 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
       res.status(400).json({ error: 'relationship must be 100 characters or fewer' }); return;
     }
     const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.length > 254) {
+      res.status(400).json({ error: 'email must be 254 characters or fewer' }); return;
+    }
     // Basic email format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       res.status(400).json({ error: 'Invalid email format' }); return;
