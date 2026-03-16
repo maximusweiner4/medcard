@@ -16,6 +16,7 @@ export default function MedicationDetailScreen() {
   const [historyVisible, setHistoryVisible] = useState(false);
   const [historyLogs, setHistoryLogs] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,11 +70,12 @@ export default function MedicationDetailScreen() {
 
   async function loadHistory() {
     setHistoryLoading(true);
+    setHistoryError(null);
     try {
       const { data } = await medicationsApi.history(id);
       setHistoryLogs(data);
     } catch {
-      setHistoryLogs([]);
+      setHistoryError('Failed to load history.');
     } finally {
       setHistoryLoading(false);
     }
@@ -162,6 +164,8 @@ export default function MedicationDetailScreen() {
         <View style={styles.historySection}>
           {historyLoading ? (
             <ActivityIndicator color="#0f4c81" style={{ paddingVertical: 20 }} />
+          ) : historyError ? (
+            <Text style={styles.historyEmpty}>{historyError}</Text>
           ) : historyLogs.length === 0 ? (
             <Text style={styles.historyEmpty}>No history found.</Text>
           ) : (

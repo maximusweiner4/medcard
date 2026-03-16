@@ -25,7 +25,7 @@ export const usePatientStore = create<PatientState>((set) => ({
     try {
       const { data } = await patientsApi.list();
       set({ patients: data });
-      await AsyncStorage.setItem('cache:patients', JSON.stringify(data));
+      try { await AsyncStorage.setItem('cache:patients', JSON.stringify(data)); } catch {}
     } catch (err: any) {
       try {
         const cached = await AsyncStorage.getItem('cache:patients');
