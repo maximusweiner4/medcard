@@ -139,7 +139,18 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
   try {
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Not found or insufficient permission' }); return; }
-    await prisma.medication.delete({ where: { id: req.params.id } });
+    await prisma.$transaction([
+      prisma.medicationChangeLog.create({
+        data: {
+          medicationId: existing.id,
+          changedById: req.userId!,
+          changeType: 'DELETED',
+          previousValues: existing as any,
+          newValues: {},
+        },
+      }),
+      prisma.medication.delete({ where: { id: req.params.id } }),
+    ]);
     res.status(204).end();
   } catch (err) { next(err); }
 });

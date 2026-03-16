@@ -27,16 +27,17 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
     return;
   }
 
-  // Ensure user record exists in our DB
-  const dbUser = await prisma.user.upsert({
-    where: { supabaseId: user.id },
-    update: { email: user.email || '' },
-    create: {
-      supabaseId: user.id,
-      email: user.email || '',
-      name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-    },
-  });
+  // Look up user record — only create if not found (avoids noisy upsert write on every request)
+  let dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        supabaseId: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+      },
+    });
+  }
 
   req.userId = dbUser.id;
   req.supabaseId = user.id;

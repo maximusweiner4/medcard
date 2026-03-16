@@ -23,10 +23,13 @@ app.use(helmet({ contentSecurityPolicy: false }));
 
 const corsOrigin = process.env.CORS_ORIGIN;
 if (!corsOrigin && process.env.NODE_ENV === 'production') {
-  console.warn('[WARN] CORS_ORIGIN not set — defaulting to wildcard. Set CORS_ORIGIN in production.');
+  throw new Error('CORS_ORIGIN must be set in production. Refusing to start with wildcard CORS.');
 }
 app.use(cors({ origin: corsOrigin || '*' }));
-app.use(morgan('dev'));
+// Log method + path only — no query strings or IDs to avoid PHI in logs
+app.use(morgan(':method :url :status :response-time ms', {
+  skip: (req) => req.url.startsWith('/health'),
+}));
 app.use(express.json());
 
 // Public share route (no auth)

@@ -1,9 +1,11 @@
 import { Router } from 'express';
+import { requireAuth } from '../middleware/auth';
 import { searchDrugs, getDrugDetails, getNdcs, getDrugProducts } from '../services/rxnorm.service';
 import { getPillImages, getPrimaryPillImage } from '../services/rximage.service';
 import { getPillAppearance } from '../services/dailymed.service';
 
 const router = Router();
+router.use(requireAuth);
 
 /** GET /api/drugs/search?term= — fuzzy drug name search via RxNorm */
 router.get('/search', async (req, res, next) => {

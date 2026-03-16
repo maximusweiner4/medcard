@@ -23,6 +23,7 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
     : 500;
 
   const message = safeMessage(err);
-  console.error(`[${status}] ${err.message || message}`, err.stack);
+  // Log code + stack only — never log err.message in case it contains PHI from Prisma constraint values
+  console.error(`[${status}] ${err.code || message}`, err.stack);
   res.status(status).json({ error: message });
 }

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — KinRx</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:        #0d9488;
+      --teal-dark:   #0f766e;
+      --teal-light:  #f0fdfa;
+      --teal-mid:    #ccfbf1;
+      --text:        #1e293b;
+      --muted:       #64748b;
+      --border:      #e2e8f0;
+      --bg:          #f8fafc;
+      --white:       #ffffff;
+      --warn-bg:     #fffbeb;
+      --warn-border: #f59e0b;
+      --warn-text:   #78350f;
+      --info-bg:     #f0f9ff;
+      --info-border: #38bdf8;
+      --info-text:   #0c4a6e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--teal);
+      color: var(--white);
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+
+    .header-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--white);
+      margin-bottom: 0.75rem;
+    }
+
+    .header-logo .logo-pill {
+      background: rgba(255,255,255,0.22);
+      border-radius: 10px;
+      padding: 0.3rem 0.7rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    header h1 {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 600;
+      opacity: 0.95;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge-updated {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border-radius: 99px;
+      padding: 0.2rem 0.9rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.03em;
+      opacity: 0.88;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* ── Table of Contents ── */
+    .toc {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--teal);
+      border-radius: 8px;
+      padding: 1.4rem 1.75rem;
+      margin-bottom: 3rem;
+    }
+
+    .toc-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      margin-bottom: 0.8rem;
+    }
+
+    .toc ol { padding-left: 1.2rem; }
+    .toc li { margin-bottom: 0.3rem; }
+
+    .toc a {
+      color: var(--teal-dark);
+      text-decoration: none;
+      font-size: 0.93rem;
+    }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Sections ── */
+    section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    section h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--teal-dark);
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--teal-mid);
+      margin-bottom: 1rem;
+    }
+
+    section h3 {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.25rem 0 0.5rem;
+    }
+
+    p { margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol {
+      padding-left: 1.4rem;
+      margin-bottom: 0.9rem;
+    }
+
+    li { margin-bottom: 0.4rem; }
+
+    strong { font-weight: 600; }
+
+    a { color: var(--teal-dark); }
+    a:hover { color: var(--teal); }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: 7px;
+      padding: 0.9rem 1.1rem;
+      margin: 1.1rem 0;
+      font-size: 0.93rem;
+    }
+
+    .callout-teal {
+      background: var(--teal-light);
+      border-left: 4px solid var(--teal);
+      color: #134e4a;
+    }
+
+    .callout-warn {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .callout-info {
+      background: var(--info-bg);
+      border-left: 4px solid var(--info-border);
+      color: var(--info-text);
+    }
+
+    .callout-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+      opacity: 0.8;
+    }
+
+    /* ── Data table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 1rem 0 0.5rem;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    .data-table th {
+      background: var(--teal);
+      color: var(--white);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+    }
+
+    .data-table td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:nth-child(even) td { background: #f8fffe; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--teal-dark); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    footer .sep { margin: 0 0.5rem; opacity: 0.4; }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      header { padding: 2.25rem 1rem 2rem; }
+      .container { padding: 1.75rem 0.85rem 3.5rem; }
+      section { padding: 1.25rem 1.1rem; }
+      .toc { padding: 1.1rem 1.2rem; }
+
+      .data-table { font-size: 0.82rem; }
+      .data-table th, .data-table td { padding: 0.5rem 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="header-logo" href="index.html">
+    <span class="logo-pill">KinRx</span>
+  </a>
+  <h1>Privacy Policy</h1>
+  <span class="badge-updated">Last updated: March 2026</span>
+</header>
+
+<main class="container" role="main">
+
+  <!-- Table of Contents -->
+  <nav class="toc" aria-label="Table of contents">
+    <p class="toc-label">Contents</p>
+    <ol>
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#data-collected">Information We Collect</a></li>
+      <li><a href="#how-used">How We Use Your Information</a></li>
+      <li><a href="#sharing">Information Sharing</a></li>
+      <li><a href="#security">Data Security</a></li>
+      <li><a href="#hipaa">HIPAA Notice</a></li>
+      <li><a href="#children">Children's Privacy</a></li>
+      <li><a href="#your-rights">Your Rights</a></li>
+      <li><a href="#medical-disclaimer">Medical Disclaimer</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+      <li><a href="#changes">Changes to This Policy</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. Introduction -->
+  <section id="introduction">
+    <h2>1. Introduction</h2>
+    <p>KinRx ("the App," "we," "us," or "our") is an iOS application developed by Max Weiner that helps patients maintain medication lists and share them securely with family caregivers and emergency medical providers via QR code or shareable link.</p>
+    <p>This Privacy Policy describes what information KinRx collects, how that information is used, and the choices you have regarding your data. By creating an account or using the App, you agree to the practices described in this policy. If you do not agree, please discontinue use of the application and contact us to request account deletion.</p>
+    <p>This policy applies solely to information collected through the KinRx mobile application and any associated web-based shared-view pages. It does not apply to third-party services or websites linked from within the App.</p>
+  </section>
+
+  <!-- 2. Information We Collect -->
+  <section id="data-collected">
+    <h2>2. Information We Collect</h2>
+    <p>We collect only the information necessary to provide the medication management and sharing features of KinRx.</p>
+
+    <h3>Account Information</h3>
+    <p>When you create a KinRx account, we collect your <strong>email address</strong> and <strong>full name</strong>. These are used to create and authenticate your account and to send you account-related communications.</p>
+
+    <h3>Patient Profiles</h3>
+    <p>You may create one or more patient profiles within the App. For each profile, we store the information you choose to enter, which may include:</p>
+    <ul>
+      <li>Patient name</li>
+      <li>Date of birth</li>
+      <li>Known allergies and adverse drug reactions</li>
+    </ul>
+
+    <h3>Medication Information</h3>
+    <p>For each medication you add to a patient profile, we store the information you enter, which may include:</p>
+    <ul>
+      <li>Medication name (generic and/or brand)</li>
+      <li>Dose, dose form, and route of administration</li>
+      <li>Frequency and schedule</li>
+      <li>Prescriber and pharmacy names</li>
+      <li>Special instructions, indication (reason for use), and notes</li>
+      <li>Pill or label photos you choose to upload</li>
+    </ul>
+
+    <h3>Caregiver Relationships</h3>
+    <p>If you choose to share access to a patient profile with a caregiver, we collect the caregiver's <strong>email address</strong> and the <strong>permission level</strong> you assign (e.g., view-only). Caregivers are not automatically notified; access is granted only upon your explicit action.</p>
+
+    <h3>Shared Link Access Logs</h3>
+    <p>When you generate a shareable QR code or link for a medication list, we record <strong>access counts and timestamps</strong> each time the link is viewed. We may also log the viewer's IP address and device/browser type (via User-Agent header) for security monitoring purposes. No additional identifying information about anonymous link viewers is collected.</p>
+
+    <h3>Technical Data</h3>
+    <p>We collect limited technical information to support app functionality, including app version and device operating system version. We do not use third-party analytics SDKs, advertising frameworks, advertising IDs, or precise location data.</p>
+
+    <table class="data-table" aria-label="Summary of data collected">
+      <thead>
+        <tr>
+          <th>Data Category</th>
+          <th>Examples</th>
+          <th>Required?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Account</td>
+          <td>Email, full name</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Patient Profile</td>
+          <td>Name, date of birth, allergies</td>
+          <td>Yes (core features)</td>
+        </tr>
+        <tr>
+          <td>Medications</td>
+          <td>Drug, dose, prescriber, photos</td>
+          <td>Yes (core features)</td>
+        </tr>
+        <tr>
+          <td>Caregivers</td>
+          <td>Email, permission level</td>
+          <td>No (optional)</td>
+        </tr>
+        <tr>
+          <td>Shared Link Logs</td>
+          <td>Access count, timestamps, IP</td>
+          <td>When you share</td>
+        </tr>
+        <tr>
+          <td>Technical</td>
+          <td>App version, OS version</td>
+          <td>Automatic</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. How We Use Information -->
+  <section id="how-used">
+    <h2>3. How We Use Your Information</h2>
+    <p>We use the information we collect solely to provide, maintain, and improve KinRx:</p>
+    <ul>
+      <li><strong>Core service delivery</strong> — creating and managing patient medication lists, supporting QR-code and link-based sharing with caregivers and medical providers</li>
+      <li><strong>Account authentication and security</strong> — verifying your identity when you log in and protecting your account from unauthorized access</li>
+      <li><strong>Caregiver access management</strong> — granting and revoking the permissions you configure for other users</li>
+      <li><strong>Share activity visibility</strong> — displaying to you how many times a shared link has been accessed, so you remain informed</li>
+      <li><strong>App stability</strong> — using technical data to diagnose crashes and compatibility issues</li>
+      <li><strong>Transactional communication</strong> — sending account verification emails and responding to support requests; we do not send marketing emails</li>
+    </ul>
+    <div class="callout callout-teal">
+      <span class="callout-label">Our Commitment</span>
+      We do not sell, rent, or trade your personal information to any third party. We do not display advertising. We do not use your health information to train machine learning models or for any purpose unrelated to providing KinRx directly to you.
+    </div>
+  </section>
+
+  <!-- 4. Sharing -->
+  <section id="sharing">
+    <h2>4. Information Sharing</h2>
+
+    <h3>Sharing You Control</h3>
+    <p>The primary way information leaves KinRx is through actions you take. When you generate a QR code or shareable link and provide it to a caregiver, family member, or healthcare provider, that person gains access to the medication list you designated. You control who receives that link, and you can revoke access at any time through the App. Revoking access takes effect immediately.</p>
+
+    <h3>Service Providers</h3>
+    <p>We use one infrastructure provider to operate the App:</p>
+    <ul>
+      <li><strong>Supabase</strong> — database, authentication, and file storage, hosted in the United States. Supabase processes your data solely on our behalf and is bound by a data processing agreement. See <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase's Privacy Policy</a>.</li>
+    </ul>
+    <p>We do not share your data with analytics platforms, advertising networks, data brokers, or any other third party not listed above.</p>
+
+    <h3>Legal Requirements</h3>
+    <p>We may disclose information if required by a valid court order, subpoena, or applicable law, or to protect the rights, property, or safety of KinRx, our users, or the public. We will attempt to notify you of any such disclosure to the extent permitted by law.</p>
+
+    <h3>Business Transfers</h3>
+    <p>In the event KinRx is acquired by or merged with another entity, user data may be transferred as part of that transaction. Users will be notified before any such transfer, and the acquiring entity will be required to honor the commitments made in this policy.</p>
+  </section>
+
+  <!-- 5. Security -->
+  <section id="security">
+    <h2>5. Data Security</h2>
+    <p>We implement industry-standard safeguards to protect your health information:</p>
+    <ul>
+      <li><strong>Encryption in transit</strong> — all communication between the App and our servers uses TLS 1.2 or higher (HTTPS)</li>
+      <li><strong>Encryption at rest</strong> — data stored in Supabase is encrypted using AES-256 at the storage layer</li>
+      <li><strong>Access controls</strong> — row-level security policies ensure users can only access their own records or profiles they have been explicitly granted access to</li>
+      <li><strong>Authentication</strong> — account access is secured through Supabase Auth with secure session tokens and expiry</li>
+      <li><strong>Rate limiting</strong> — shared link endpoints are rate-limited to prevent enumeration attacks (60 requests per 15 minutes)</li>
+      <li><strong>Input sanitization</strong> — all free-text inputs are sanitized server-side to prevent injection attacks</li>
+      <li><strong>No advertising SDKs</strong> — we do not include advertising libraries that could transmit health data to ad networks</li>
+    </ul>
+    <div class="callout callout-info">
+      <span class="callout-label">Security Notice</span>
+      No method of electronic transmission or storage is 100% secure. While we use commercially reasonable means to protect your data, we cannot guarantee absolute security. If you believe your account has been compromised, contact us immediately at <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a>.
+    </div>
+  </section>
+
+  <!-- 6. HIPAA -->
+  <section id="hipaa">
+    <h2>6. HIPAA Notice</h2>
+    <div class="callout callout-info">
+      <span class="callout-label">Health Information Notice</span>
+      KinRx may store and process information that constitutes Protected Health Information (PHI) as defined under the Health Insurance Portability and Accountability Act (HIPAA).
+    </div>
+    <p>KinRx is developed by an individual developer and does not operate as a HIPAA Covered Entity (i.e., it is not a healthcare provider, health plan, or healthcare clearinghouse). However, we recognize the sensitivity of health information and voluntarily adopt HIPAA-aligned data handling practices, including:</p>
+    <ul>
+      <li>Limiting collection of health data to what is necessary to provide the features you use</li>
+      <li>Not using or disclosing health information for purposes unrelated to those described in this policy without your consent</li>
+      <li>Implementing technical safeguards consistent with the HIPAA Security Rule (encryption, access controls, audit logs)</li>
+      <li>Maintaining a Data Processing Agreement with Supabase that addresses the secure handling of user data</li>
+    </ul>
+    <div class="callout callout-warn">
+      <span class="callout-label">Important for Organizations</span>
+      If you are a Covered Entity (e.g., a hospital or clinic) and require a formal Business Associate Agreement (BAA) before using KinRx in workflows involving patient PHI, please contact us at <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a> before deploying KinRx in an institutional or clinical capacity.
+    </div>
+  </section>
+
+  <!-- 7. Children -->
+  <section id="children">
+    <h2>7. Children's Privacy</h2>
+    <p>KinRx accounts may only be created by individuals who are 13 years of age or older. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe that a child under 13 has created an account, please contact us at <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a> and we will promptly delete that information.</p>
+    <p>Adult users may create and manage patient profiles on behalf of minor dependents within their own account. In doing so, the account holder is responsible for ensuring they have the legal authority to manage that child's health information.</p>
+  </section>
+
+  <!-- 8. Your Rights -->
+  <section id="your-rights">
+    <h2>8. Your Rights</h2>
+    <p>You have the following rights regarding your personal data:</p>
+
+    <h3>Access and Portability</h3>
+    <p>You can view all of your data at any time within the App. To request a structured export of your data in a machine-readable format (JSON or CSV), email <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a> with subject line "Data Export Request."</p>
+
+    <h3>Correction</h3>
+    <p>You can edit or correct any information you have entered directly within the App at any time.</p>
+
+    <h3>Deletion</h3>
+    <p>You can delete individual patient profiles, medications, and shared links directly within the App. To delete your entire account and all associated data permanently, email <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a> with subject line "Account Deletion Request" from the address associated with your account. Deletion is permanent and cannot be undone. We will complete deletion within 30 days and confirm when done.</p>
+
+    <h3>Revoke Sharing</h3>
+    <p>You can revoke caregiver access or deactivate any shared link at any time directly within the App. Revocation takes effect immediately.</p>
+
+    <h3>California Residents (CCPA)</h3>
+    <p>If you are a California resident, you have the right to know what personal information is collected, the right to delete, and the right to opt out of the sale of personal information. KinRx does not sell personal information. To exercise CCPA rights, contact <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a>.</p>
+
+    <h3>EEA and UK Residents (GDPR / UK GDPR)</h3>
+    <p>If you are located in the EEA or UK, you may have rights including access, rectification, erasure, restriction of processing, data portability, and the right to object. Our lawful basis for processing health information is your explicit consent provided at account creation. To exercise your rights, contact <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a>.</p>
+
+    <div class="callout callout-teal">
+      We do not charge any fee for exercising these rights and will respond to all requests within 30 days.
+    </div>
+  </section>
+
+  <!-- 9. Medical Disclaimer -->
+  <section id="medical-disclaimer">
+    <h2>9. Medical Disclaimer</h2>
+    <div class="callout callout-warn">
+      <span class="callout-label">Not Medical Advice</span>
+      KinRx is a medication list management tool, not a medical device or clinical decision support system. It is not a substitute for professional medical advice, diagnosis, or treatment.
+    </div>
+    <p>The information stored and displayed in KinRx is provided for organizational and informational purposes only. KinRx does not verify the accuracy, completeness, or appropriateness of any medication information entered by users. The App does not provide drug interaction checking, dosing guidance, clinical recommendations, or any other form of clinical decision support.</p>
+    <p>Always seek the advice of a qualified healthcare professional — such as a physician, pharmacist, or other licensed provider — regarding any questions about your medications or medical condition. Never disregard or delay seeking professional medical advice because of information stored in or shared through KinRx.</p>
+    <p>In a medical emergency, call 911 or your local emergency services immediately. Do not rely solely on KinRx-generated medication lists in emergency settings — always inform treating clinicians verbally of relevant medical history.</p>
+  </section>
+
+  <!-- 10. Contact -->
+  <section id="contact">
+    <h2>10. Contact Us</h2>
+    <p>If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact:</p>
+    <p>
+      <strong>Max Weiner</strong><br />
+      Developer, KinRx<br />
+      Email: <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a>
+    </p>
+    <p>We aim to respond to all privacy-related inquiries within 5 business days.</p>
+  </section>
+
+  <!-- 11. Changes -->
+  <section id="changes">
+    <h2>11. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. When we make changes, we will update the "Last updated" date at the top of this page.</p>
+    <p>For material changes — such as new categories of data collected, new third parties with whom data is shared, or significant changes to how health information is used — we will notify you through an in-app notice or by email to the address associated with your account at least 14 days before the change takes effect.</p>
+    <p>Continued use of the App after the effective date of a revised policy constitutes your acceptance of the changes. If you disagree with any changes, you may delete your account as described in Section 8.</p>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    &copy; 2026 KinRx &mdash; Max Weiner
+    <span class="sep">|</span>
+    <a href="mailto:max.weiner4@gmail.com">max.weiner4@gmail.com</a>
+    <span class="sep">|</span>
+    <a href="index.html">Home</a>
+  </p>
+  <p style="margin-top: 0.4rem;">Last updated: March 2026</p>
+</footer>
+
+</body>
+</html>

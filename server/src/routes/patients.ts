@@ -224,6 +224,10 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
     if (!email || typeof email !== 'string' || !email.trim()) {
       res.status(400).json({ error: 'email is required' }); return;
     }
+    const validLevels = ['ADMIN', 'VIEW_ONLY'];
+    if (permissionLevel && !validLevels.includes(permissionLevel)) {
+      res.status(400).json({ error: 'permissionLevel must be ADMIN or VIEW_ONLY' }); return;
+    }
     const normalizedEmail = email.trim().toLowerCase();
     // Basic email format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {

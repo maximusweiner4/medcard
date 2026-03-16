@@ -18,6 +18,10 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
     if (!isAdmin) { res.status(403).json({ error: 'Admin permission required' }); return; }
 
     const { permissionLevel, relationship } = req.body;
+    const validLevels = ['ADMIN', 'VIEW_ONLY'];
+    if (permissionLevel && !validLevels.includes(permissionLevel)) {
+      res.status(400).json({ error: 'permissionLevel must be ADMIN or VIEW_ONLY' }); return;
+    }
     const updated = await prisma.caregiverPatient.update({
       where: { id: req.params.id },
       data: {

@@ -27,7 +27,7 @@ router.get('/patients/:id/pdf', async (req: AuthRequest, res, next) => {
 
     const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="medications-${patient.name.replace(/\s+/g, '-')}.pdf"`);
+    res.setHeader('Content-Disposition', 'attachment; filename="medication-list.pdf"');
     doc.pipe(res);
 
     // Header

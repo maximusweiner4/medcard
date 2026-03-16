@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, AppState, AppStateStatus } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/stores/authStore';
 import { useBiometricStore } from '../src/stores/biometricStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import DisclaimerScreen, { DISCLAIMER_KEY } from './disclaimer';
 
 export default function RootLayout() {
   const { user, loading, loadSession } = useAuthStore();
@@ -11,10 +13,12 @@ export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
   const appState = useRef<AppStateStatus>(AppState.currentState);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState<boolean | null>(null);
 
   useEffect(() => {
     loadSession().catch(() => {});
     loadSetting();
+    AsyncStorage.getItem(DISCLAIMER_KEY).then((val) => setDisclaimerAccepted(val === 'true'));
   }, []);
 
   useEffect(() => {
@@ -36,6 +40,10 @@ export default function RootLayout() {
     if (!user && !inAuth) router.replace('/(auth)/login');
     if (user && inAuth) router.replace('/(tabs)/');
   }, [user, loading, segments]);
+
+  if (disclaimerAccepted === false) {
+    return <DisclaimerScreen onAccept={() => setDisclaimerAccepted(true)} />;
+  }
 
   if (isLocked && user) {
     return (

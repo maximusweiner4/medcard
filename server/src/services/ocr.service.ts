@@ -22,7 +22,7 @@ export interface OcrResult {
 
 /** Stub: saves photo URL, returns pending status for manual caregiver confirmation */
 export async function processBottlePhoto(photoUrl: string): Promise<OcrResult> {
-  console.log(`[OCR STUB] Photo received: ${photoUrl}. Manual entry required.`);
+  console.log('[OCR STUB] Bottle photo received — manual entry required. URL omitted from log.');
   return {
     status: 'pending',
     rawText: null,
