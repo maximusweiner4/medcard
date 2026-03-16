@@ -18,14 +18,23 @@ export interface DrugDetails {
 /** Fuzzy drug name search — handles misspellings */
 export async function searchDrugs(term: string): Promise<RxNormCandidate[]> {
   const { data } = await axios.get(`${BASE}/approximateTerm.json`, {
-    params: { term, maxEntries: 10 },
+    params: { term, maxEntries: 20 },
   });
   const candidates = data?.approximateGroup?.candidate ?? [];
-  return candidates.map((c: any) => ({
-    rxcui: c.rxcui,
-    name: c.name,
-    score: parseInt(c.score, 10),
-  }));
+
+  // Deduplicate by lowercase name — keep highest score per name, filter blanks
+  const seen = new Map<string, RxNormCandidate>();
+  for (const c of candidates) {
+    const name: string = (c.name ?? '').trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    const score = parseInt(c.score, 10);
+    if (!seen.has(key) || score > seen.get(key)!.score) {
+      seen.set(key, { rxcui: c.rxcui, name, score });
+    }
+  }
+
+  return Array.from(seen.values()).sort((a, b) => b.score - a.score).slice(0, 10);
 }
 
 /** Get detailed properties for an RxCUI */
