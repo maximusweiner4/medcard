@@ -48,6 +48,7 @@ router.get('/:token', shareLimiter, async (req, res, next) => {
       patient,
       lastUpdated,
       generatedAt: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }),
+      shareToken: req.params.token,
     });
   } catch (err) { next(err); }
 });

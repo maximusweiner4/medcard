@@ -1,12 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, AppState, AppStateStatus } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, AppState, AppStateStatus, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 import { useAuthStore } from '../src/stores/authStore';
 import { useBiometricStore } from '../src/stores/biometricStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import DisclaimerScreen, { DISCLAIMER_KEY } from './disclaimer';
+import { api } from '../src/services/api';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+async function registerForPushNotifications() {
+  if (Platform.OS === 'web') return;
+  try {
+    const { status: existing } = await Notifications.getPermissionsAsync();
+    let finalStatus = existing;
+    if (existing !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') return;
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId: '94fef775-74b6-4a54-abd4-e9e5abf3ba00',
+    })).data;
+    await api.post('/api/notifications/token', { token });
+  } catch {
+    // Non-critical — never crash the app over notification registration
+  }
+}
 
 export default function RootLayout() {
   const { user, loading, loadSession } = useAuthStore();
@@ -39,7 +68,10 @@ export default function RootLayout() {
     if (loading) return;
     const inAuth = segments[0] === '(auth)';
     if (!user && !inAuth) router.replace('/(auth)/login');
-    if (user && inAuth) router.replace('/(tabs)/');
+    if (user && inAuth) {
+      router.replace('/(tabs)/');
+      registerForPushNotifications();
+    }
   }, [user, loading, segments]);
 
   if (disclaimerAccepted === false) {

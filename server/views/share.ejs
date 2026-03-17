@@ -131,6 +131,13 @@
 </head>
 <body>
 
+<% if (!error && shareToken) { %>
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <span style="font-size:14px;color:#166534;font-weight:500;">Have the KinRx app? Open this list directly.</span>
+    <a href="kinrx://share/<%= shareToken %>" style="background:#0d9488;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;white-space:nowrap;">Open in App</a>
+  </div>
+<% } %>
+
 <% if (error) { %>
   <div class="error-box"><%= error %></div>
 <% } else { %>

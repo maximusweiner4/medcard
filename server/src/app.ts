@@ -13,6 +13,7 @@ import shareRouter from './routes/share';
 import caregiversRouter from './routes/caregivers';
 import authRouter from './routes/auth';
 import pdfRouter from './routes/pdf';
+import notificationsRouter from './routes/notifications';
 import { errorHandler } from './middleware/error';
 
 const app = express();
@@ -48,6 +49,7 @@ app.use('/api/patients', patientsRouter);
 app.use('/api/medications', medicationsRouter);
 app.use('/api/caregivers', caregiversRouter);
 app.use('/api', pdfRouter);
+app.use('/api/notifications', notificationsRouter);
 
 app.use(errorHandler);
 
