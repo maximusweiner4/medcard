@@ -50,6 +50,10 @@ export default function DisclaimerScreen({ onAccept }: Props) {
             <Text style={styles.link} onPress={() => Linking.openURL('https://maximusweiner4.github.io/kinrx/privacy')}>
               Privacy Policy
             </Text>
+            {' '}and{' '}
+            <Text style={styles.link} onPress={() => Linking.openURL('https://maximusweiner4.github.io/kinrx/tos')}>
+              Terms of Service
+            </Text>
           </Text>
         </View>
       </ScrollView>
