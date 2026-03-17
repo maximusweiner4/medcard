@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const DISCLAIMER_KEY = 'disclaimer:accepted';
@@ -46,8 +46,10 @@ export default function DisclaimerScreen({ onAccept }: Props) {
             your data or use it for advertising.
           </Text>
           <Text style={styles.body}>
-            By continuing, you agree to our Privacy Policy at{' '}
-            <Text style={styles.link}>maximusweiner4.github.io/medcard/privacy</Text>
+            By continuing, you agree to our{' '}
+            <Text style={styles.link} onPress={() => Linking.openURL('https://kinrx.github.io/privacy')}>
+              Privacy Policy
+            </Text>
           </Text>
         </View>
       </ScrollView>
