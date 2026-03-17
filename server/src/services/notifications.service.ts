@@ -1,11 +1,16 @@
-import { Expo, ExpoPushMessage } from 'expo-server-sdk';
 import { prisma } from '../lib/prisma';
 
-const expo = new Expo();
+// expo-server-sdk is ESM-only; use dynamic import to stay compatible with CommonJS output
+async function getExpo() {
+  const { Expo } = await import('expo-server-sdk');
+  return Expo;
+}
 
 export async function sendRefillReminder(pushToken: string, drugName: string, daysUntil: number) {
+  const Expo = await getExpo();
   if (!Expo.isExpoPushToken(pushToken)) return;
-  const messages: ExpoPushMessage[] = [{
+  const expo = new Expo();
+  const messages: Parameters<typeof expo.sendPushNotificationsAsync>[0] = [{
     to: pushToken,
     title: 'Refill Reminder',
     body: daysUntil === 0
@@ -15,9 +20,7 @@ export async function sendRefillReminder(pushToken: string, drugName: string, da
   }];
   try {
     const chunks = expo.chunkPushNotifications(messages);
-    for (const chunk of chunks) {
-      await expo.sendPushNotificationsAsync(chunk);
-    }
+    for (const chunk of chunks) await expo.sendPushNotificationsAsync(chunk);
   } catch {
     // Non-critical — never let notification failure crash anything
   }
