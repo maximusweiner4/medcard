@@ -18,7 +18,7 @@ interface MedicationState {
 // Track the latest requested patientId to discard stale concurrent fetches
 let _latestMedFetchId = '';
 
-export const useMedicationStore = create<MedicationState>((set) => ({
+export const useMedicationStore = create<MedicationState>((set, get) => ({
   medications: [],
   loading: false,
   error: null,
@@ -48,6 +48,7 @@ export const useMedicationStore = create<MedicationState>((set) => ({
   addMedication: async (patientId, data) => {
     const { data: med } = await patientsApi.addMedication(patientId, data);
     set((state) => ({ medications: [...state.medications, med] }));
+    try { await AsyncStorage.removeItem(`cache:medications:${patientId}`); } catch {}
     return med;
   },
 
@@ -59,29 +60,29 @@ export const useMedicationStore = create<MedicationState>((set) => ({
   },
 
   stopMedication: async (id) => {
-    // API call first — only update local state if it succeeds
     await medicationsApi.stop(id);
+    const patientId = get().medications.find((m) => m.id === id)?.patientId;
     set((state) => ({
-      medications: state.medications.map((m) =>
-        m.id === id ? { ...m, isActive: false } : m
-      ),
+      medications: state.medications.map((m) => m.id === id ? { ...m, isActive: false } : m),
     }));
+    if (patientId) { try { await AsyncStorage.removeItem(`cache:medications:${patientId}`); } catch {} }
   },
 
   restartMedication: async (id) => {
-    // API call first — only update local state if it succeeds
     await medicationsApi.restart(id);
+    const patientId = get().medications.find((m) => m.id === id)?.patientId;
     set((state) => ({
-      medications: state.medications.map((m) =>
-        m.id === id ? { ...m, isActive: true } : m
-      ),
+      medications: state.medications.map((m) => m.id === id ? { ...m, isActive: true } : m),
     }));
+    if (patientId) { try { await AsyncStorage.removeItem(`cache:medications:${patientId}`); } catch {} }
   },
 
   deleteMedication: async (id) => {
+    const patientId = get().medications.find((m) => m.id === id)?.patientId;
     await medicationsApi.delete(id);
     set((state) => ({
       medications: state.medications.filter((m) => m.id !== id),
     }));
+    if (patientId) { try { await AsyncStorage.removeItem(`cache:medications:${patientId}`); } catch {} }
   },
 }));

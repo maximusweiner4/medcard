@@ -45,6 +45,7 @@ export const usePatientStore = create<PatientState>((set) => ({
   createPatient: async (data) => {
     const { data: patient } = await patientsApi.create(data);
     set((state) => ({ patients: [...state.patients, patient] }));
+    try { await AsyncStorage.removeItem('cache:patients'); } catch {}
     return patient;
   },
 
@@ -54,5 +55,6 @@ export const usePatientStore = create<PatientState>((set) => ({
       patients: state.patients.map((p) => (p.id === id ? updated : p)),
       activePatient: state.activePatient?.id === id ? updated : state.activePatient,
     }));
+    try { await AsyncStorage.removeItem('cache:patients'); } catch {}
   },
 }));
