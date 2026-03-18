@@ -32,7 +32,7 @@ export default function PatientProfileScreen() {
     fetchMedications(id);
     setCaregiverLoadError(null);
     patientsApi.get(id).then(({ data }) => {
-      if (data.caregivers) setCaregivers(data.caregivers);
+      setCaregivers(data.caregivers ?? []);
     }).catch(() => { setCaregiverLoadError('Failed to load caregivers.'); });
   }, [id]));
 
@@ -91,7 +91,7 @@ export default function PatientProfileScreen() {
       setCaregiverEmail('');
       setCaregiverRelationship('');
       const { data } = await patientsApi.get(patient!.id);
-      if (data.caregivers) setCaregivers(data.caregivers);
+      setCaregivers(data.caregivers ?? []);
       Alert.alert('Success', 'Caregiver added to this patient.');
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to invite caregiver');
@@ -104,7 +104,7 @@ export default function PatientProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
       <View style={styles.profileCard}>
         <Ionicons name="person-circle-outline" size={64} color="#0f4c81" style={{ marginBottom: 12 }} />
-        <Text style={styles.name}>{patient.name}</Text>
+        <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">{patient.name}</Text>
         {patient.dateOfBirth && (
           <Text style={styles.dob}>DOB: {new Date(patient.dateOfBirth).toLocaleDateString('en-US')}</Text>
         )}

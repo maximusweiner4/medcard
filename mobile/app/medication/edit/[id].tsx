@@ -70,7 +70,7 @@ export default function EditMedicationScreen() {
     if (pillsRemaining.trim()) {
       const n = parseInt(pillsRemaining.trim(), 10);
       if (isNaN(n) || n < 0 || String(n) !== pillsRemaining.trim()) {
-        Alert.alert('Pills Remaining must be a non-negative whole number');
+        Alert.alert('Invalid amount', 'Please enter a whole number like 30 (no decimals).');
         return;
       }
     }

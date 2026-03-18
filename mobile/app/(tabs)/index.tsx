@@ -11,6 +11,13 @@ export default function PatientsScreen() {
   const { patients, fetchPatients, createPatient, selectPatient, loading, error } = usePatientStore();
   const { signOut, user } = useAuthStore();
   const router = useRouter();
+
+  function handleSignOut() {
+    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign out', style: 'destructive', onPress: () => signOut() },
+    ]);
+  }
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
@@ -44,7 +51,7 @@ export default function PatientsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Hello, {user?.name?.split(' ')[0] ?? 'there'}</Text>
-        <TouchableOpacity onPress={signOut}><Text style={styles.signOut}>Sign out</Text></TouchableOpacity>
+        <TouchableOpacity onPress={handleSignOut}><Text style={styles.signOut}>Sign out</Text></TouchableOpacity>
       </View>
 
       {patients.length === 0 && !loading ? (
@@ -65,10 +72,10 @@ export default function PatientsScreen() {
               <View style={styles.cardLeft}>
                 <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
                 <Text style={styles.cardSub}>{item.medications?.length ?? 0} active medications</Text>
-                {item.allergies.length > 0 && (
+                {(item.allergies?.length ?? 0) > 0 && (
                   <View style={styles.allergyChip}>
                     <Ionicons name="warning-outline" size={18} color="#dc2626" style={{ marginRight: 4 }} />
-                    <Text style={styles.allergyText} numberOfLines={2} ellipsizeMode="tail">{item.allergies.join(', ')}</Text>
+                    <Text style={styles.allergyText} numberOfLines={2} ellipsizeMode="tail">{(item.allergies ?? []).join(', ')}</Text>
                   </View>
                 )}
               </View>

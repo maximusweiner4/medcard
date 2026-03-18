@@ -10,6 +10,7 @@ interface PatientState {
   error: string | null;
   fetchPatients: () => Promise<void>;
   selectPatient: (patient: Patient) => void;
+  clearPatient: () => void;
   createPatient: (data: { name: string; dateOfBirth?: string; allergies?: string[] }) => Promise<Patient>;
   updatePatient: (id: string, data: any) => Promise<void>;
 }
@@ -41,6 +42,7 @@ export const usePatientStore = create<PatientState>((set) => ({
   },
 
   selectPatient: (patient) => set({ activePatient: patient }),
+  clearPatient: () => set({ activePatient: null }),
 
   createPatient: async (data) => {
     const { data: patient } = await patientsApi.create(data);

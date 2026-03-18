@@ -76,7 +76,7 @@ export default function MedicationsScreen() {
         )}
       </View>
       <View style={styles.cardInfo}>
-        <Text style={styles.drugName} numberOfLines={1} ellipsizeMode="tail">{item.drugName}</Text>
+        <Text style={styles.drugName} numberOfLines={1} ellipsizeMode="tail">{item.drugName ?? 'Unknown medication'}</Text>
         {item.brandName ? <Text style={styles.brandName} numberOfLines={1}>{item.brandName}</Text> : null}
         <Text style={styles.doseText} numberOfLines={1}>{[item.dose, item.form, item.route].filter(Boolean).join(' · ')}</Text>
         {item.indication ? <Text style={styles.indicationText} numberOfLines={1} ellipsizeMode="tail">{item.indication}</Text> : null}
@@ -85,7 +85,7 @@ export default function MedicationsScreen() {
           if (!item.nextRefillDate) return null;
           const d = daysUntil(item.nextRefillDate);
           if (isNaN(d)) return null;
-          if (d < 0) return (
+          if (d <= 0) return (
             <View style={[styles.refillBadge, { backgroundColor: '#dc2626' }]}>
               <Text style={styles.refillText}>Refill Overdue</Text>
             </View>
@@ -102,7 +102,7 @@ export default function MedicationsScreen() {
         <TouchableOpacity
           style={[styles.stopBtn, stoppingId === item.id && { opacity: 0.5 }]}
           onPress={() => confirmStop(item)}
-          disabled={stoppingId !== null}
+          disabled={stoppingId === item.id}
         >
           {stoppingId === item.id
             ? <ActivityIndicator size="small" color="#dc2626" />

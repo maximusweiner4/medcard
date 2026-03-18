@@ -14,6 +14,18 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Auto sign-out on 401 (expired session)
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const { useAuthStore } = require('../stores/authStore');
+      useAuthStore.getState().signOut();
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ─── Drug Search ──────────────────────────────────────────────────────────────
 export const drugsApi = {
   search: (term: string) => api.get(`/api/drugs/search?term=${encodeURIComponent(term)}`),

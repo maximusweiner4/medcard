@@ -59,6 +59,7 @@ export default function AddMedicationScreen() {
 
   function handleSearchChange(text: string) {
     setSearchTerm(text);
+    setSearchError(false);
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     if (text.length < 2) { setResults([]); return; }
 
@@ -106,7 +107,7 @@ export default function AddMedicationScreen() {
     if (pillsRemaining.trim()) {
       const n = parseInt(pillsRemaining.trim(), 10);
       if (isNaN(n) || n < 0 || String(n) !== pillsRemaining.trim()) {
-        Alert.alert('Pills Remaining must be a non-negative whole number');
+        Alert.alert('Invalid amount', 'Please enter a whole number like 30 (no decimals).');
         return;
       }
     }
@@ -194,7 +195,7 @@ export default function AddMedicationScreen() {
         </View>
       </View>
 
-      <Text style={styles.label}>Dose *</Text>
+      <Text style={styles.label}>Dose</Text>
       <TextInput style={styles.input} placeholder="e.g. 10 mg, 500 mg" value={dose} onChangeText={setDose} placeholderTextColor="#94a3b8" />
 
       <Text style={styles.label}>Form</Text>
