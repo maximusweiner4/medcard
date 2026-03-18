@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -22,7 +23,12 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://aribkedqvvfvrenebdpa.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyaWJrZWRxdnZmdnJlbmViZHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTkzMTIsImV4cCI6MjA4OTA5NTMxMn0.75dJZMVOQsY0nH8K9kswqPF0WwnOGJFqzeblSAcVSNs",
+        "EXPO_PUBLIC_API_URL": "https://kinrx-server-production.up.railway.app"
+      }
     }
   },
   "submit": {
