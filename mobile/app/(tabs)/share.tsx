@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView, Switch, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView, Switch, Dimensions } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -71,7 +71,7 @@ export default function ShareScreen() {
       ) : (
         <View style={styles.shareBox}>
           <View style={styles.qrContainer}>
-            <QRCode value={shareData.shareUrl} size={220} color="#0d9488" backgroundColor="#fff" />
+            <QRCode value={shareData.shareUrl} size={Math.min(Dimensions.get('window').width - 64, 400)} color="#0d9488" backgroundColor="#fff" />
           </View>
           <Text style={styles.qrNote}>Providers can scan this QR code to instantly access the medication list</Text>
 
@@ -127,12 +127,12 @@ const styles = StyleSheet.create({
   emptyBtn: { backgroundColor: '#0d9488', paddingVertical: 12, paddingHorizontal: 28, borderRadius: 999 },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   title: { fontSize: 24, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
-  subtitle: { fontSize: 14, color: '#64748b', marginBottom: 28, lineHeight: 20 },
+  subtitle: { fontSize: 17, color: '#64748b', marginBottom: 28, lineHeight: 24 },
   btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   shareBox: { alignItems: 'center' },
   qrContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  qrNote: { fontSize: 13, color: '#64748b', textAlign: 'center', marginBottom: 20 },
+  qrNote: { fontSize: 16, color: '#64748b', textAlign: 'center', marginBottom: 20 },
   urlBox: { backgroundColor: '#f1f5f9', borderRadius: 10, padding: 14, width: '100%', marginBottom: 14 },
   urlText: { fontSize: 13, color: '#475569', fontFamily: 'monospace' },
   copyBtn: { backgroundColor: '#0d9488', flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12, marginBottom: 12 },
