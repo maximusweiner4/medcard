@@ -84,7 +84,16 @@ export default function ShareScreen() {
             <Text style={styles.copyBtnText}>Share Link</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.newLinkBtn} onPress={() => { setShareData(null); }}>
+          <TouchableOpacity style={styles.newLinkBtn} onPress={() => {
+            Alert.alert(
+              'Generate New Link?',
+              'This will create a new link. The previous link will stop working.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Generate New', style: 'destructive', onPress: () => { setShareData(null); } },
+              ]
+            );
+          }}>
             <Text style={styles.newLinkText}>Generate New Link</Text>
           </TouchableOpacity>
         </View>

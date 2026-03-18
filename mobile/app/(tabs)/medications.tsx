@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
+import { showSuccess } from '../../src/utils/toast';
 import type { Medication } from '../../src/types';
 
 function daysUntil(dateStr: string): number {
@@ -56,7 +57,7 @@ export default function MedicationsScreen() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Stop', style: 'destructive', onPress: async () => {
         setStoppingId(med.id);
-        try { await stopMedication(med.id); }
+        try { await stopMedication(med.id); showSuccess('Medication stopped'); }
         catch (e: any) { Alert.alert('Error', e?.message || 'Failed to stop medication'); }
         finally { setStoppingId(null); }
       }},
@@ -125,6 +126,15 @@ export default function MedicationsScreen() {
         keyExtractor={(m) => m.id}
         renderItem={renderMed}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyMeds}>
+              <Ionicons name="medical-outline" size={48} color="#94a3b8" style={{ marginBottom: 12 }} />
+              <Text style={styles.emptyMedsTitle}>No medications yet</Text>
+              <Text style={styles.emptyMedsText}>Tap "Add Medication" below to add the first one.</Text>
+            </View>
+          ) : null
+        }
         ListFooterComponent={
           stopped.length > 0 ? (
             <TouchableOpacity onPress={() => setShowStopped(!showStopped)} style={styles.toggleStopped}>
@@ -168,6 +178,9 @@ const styles = StyleSheet.create({
   refillText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   stopBtn: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fca5a5', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14 },
   stopBtnText: { color: '#dc2626', fontSize: 15, fontWeight: '600' },
+  emptyMeds: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 32 },
+  emptyMedsTitle: { fontSize: 18, fontWeight: '700', color: '#1e293b', marginBottom: 8, textAlign: 'center' },
+  emptyMedsText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
   toggleStopped: { alignItems: 'center', paddingVertical: 12 },
   toggleText: { color: '#64748b', fontSize: 14 },
   fab: { position: 'absolute', bottom: 24, right: 20, backgroundColor: '#0d9488', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 14, borderRadius: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 5 },

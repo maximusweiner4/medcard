@@ -380,12 +380,19 @@ router.get('/:id/interactions', async (req: AuthRequest, res, next) => {
     const url = `https://rxnav.nlm.nih.gov/REST/interaction/list.json?rxcuis=${rxcuis.join('+')}`;
     let rxData: any = {};
     try {
-      const rxResponse = await fetch(url);
-      if (!rxResponse.ok) {
-        res.status(502).json({ error: `RxNorm service error (HTTP ${rxResponse.status}). Try again later.` });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      let rxResponse: Response;
+      try {
+        rxResponse = await fetch(url, { signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+      }
+      if (!rxResponse!.ok) {
+        res.status(502).json({ error: `RxNorm service error (HTTP ${rxResponse!.status}). Try again later.` });
         return;
       }
-      rxData = await rxResponse.json();
+      rxData = await rxResponse!.json();
     } catch {
       res.status(502).json({ error: 'Unable to reach RxNorm drug interaction service. Check your internet connection.' });
       return;

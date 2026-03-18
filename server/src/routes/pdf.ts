@@ -5,9 +5,12 @@ import { prisma } from '../lib/prisma';
 
 const router = Router();
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** GET /api/patients/:id/pdf — generate medication list PDF
  *  Accepts JWT via Authorization header only */
 router.get('/patients/:id/pdf', requireAuth, async (req: AuthRequest, res, next) => {
+  if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid patient ID' }); return; }
   try {
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId },

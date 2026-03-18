@@ -99,7 +99,11 @@ export default function AddMedicationScreen() {
   }
 
   async function handleSave() {
-    if (!activePatient || !selected) return;
+    if (!activePatient) return;
+    if (!selected) {
+      Alert.alert('Select a medication', 'Please search for and select a medication first.');
+      return;
+    }
     if (!dose.trim() && !frequency.trim()) {
       Alert.alert('Please enter at least a dose or frequency');
       return;
