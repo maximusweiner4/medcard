@@ -1,29 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { getPillImage } from '../../src/services/rxnorm';
 import { drugsApi } from '../../src/services/api';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
+import { showSuccess } from '../../src/utils/toast';
 import type { DrugSearchResult } from '../../src/types';
 
 type Step = 'search' | 'details';
 
 const FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every morning', 'Every evening', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Weekly', 'Other'];
-
-function parseDateInput(input: string): string | null {
-  if (!input.trim()) return null;
-  const parsed = new Date(input.trim());
-  if (!isNaN(parsed.getTime())) return parsed.toISOString();
-  // Try MM/DD/YYYY
-  const parts = input.trim().split('/');
-  if (parts.length === 3) {
-    const [m, d, y] = parts;
-    const date = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
-    if (!isNaN(date.getTime())) return date.toISOString();
-  }
-  return null;
-}
 
 export default function AddMedicationScreen() {
   const { activePatient } = usePatientStore();
@@ -46,7 +34,8 @@ export default function AddMedicationScreen() {
   const [indication, setIndication] = useState('');
   const [saving, setSaving] = useState(false);
   const [searchError, setSearchError] = useState(false);
-  const [nextRefillDate, setNextRefillDate] = useState('');
+  const [refillDate, setRefillDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [pillsRemaining, setPillsRemaining] = useState('');
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -123,9 +112,10 @@ export default function AddMedicationScreen() {
         prescriber: prescriber.trim() || undefined,
         indication: indication.trim() || undefined,
         pillImageUrl: selected.pillImageUrl,
-        nextRefillDate: parseDateInput(nextRefillDate) || undefined,
+        nextRefillDate: refillDate?.toISOString() || undefined,
         pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim(), 10) : undefined,
       });
+      showSuccess('Medication added');
       router.back();
     } catch (err: any) {
       Alert.alert('Error saving medication', err.message);
@@ -161,9 +151,15 @@ export default function AddMedicationScreen() {
           )}
           ListEmptyComponent={
             searchTerm.length >= 2 && !searching ? (
-              <Text style={styles.noResults}>
-                {searchError ? 'Search failed. Check your connection.' : 'No results found. Try a different spelling.'}
-              </Text>
+              searchError ? (
+                <Text style={styles.noResults}>Search failed. Check your connection.</Text>
+              ) : results.length === 0 && searchTerm.length > 2 ? (
+                <Text style={styles.noResultsHint}>
+                  No results. Try a generic name (e.g. "lisinopril") or brand name (e.g. "Prinivil").
+                </Text>
+              ) : (
+                <Text style={styles.noResults}>No results found. Try a different spelling.</Text>
+              )
             ) : null
           }
         />
@@ -214,8 +210,23 @@ export default function AddMedicationScreen() {
       <Text style={styles.label}>Indication (Reason for Taking)</Text>
       <TextInput style={styles.input} placeholder="e.g. High blood pressure, Type 2 diabetes" value={indication} onChangeText={setIndication} placeholderTextColor="#94a3b8" />
 
-      <Text style={styles.label}>Next Refill Date</Text>
-      <TextInput style={styles.input} placeholder="MM/DD/YYYY" value={nextRefillDate} onChangeText={setNextRefillDate} placeholderTextColor="#94a3b8" />
+      <Text style={styles.label}>Next Refill Date (optional)</Text>
+      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+        <Text style={styles.dateButtonText}>
+          {refillDate ? refillDate.toLocaleDateString() : 'Select date'}
+        </Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={refillDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(_event, date) => {
+            setShowDatePicker(false);
+            if (date) setRefillDate(date);
+          }}
+        />
+      )}
 
       <Text style={styles.label}>Pills Remaining</Text>
       <TextInput style={styles.input} placeholder="e.g. 30" value={pillsRemaining} onChangeText={setPillsRemaining} keyboardType="numeric" placeholderTextColor="#94a3b8" />
@@ -234,20 +245,23 @@ const styles = StyleSheet.create({
   resultRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 8, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#f1f5f9' },
   resultInfo: { flex: 1 },
   resultName: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
-  resultRxcui: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  resultRxcui: { fontSize: 15, color: '#94a3b8', marginTop: 2 },
   resultArrow: { fontSize: 22, color: '#94a3b8' },
-  noResults: { textAlign: 'center', color: '#94a3b8', marginTop: 24, marginHorizontal: 20 },
+  noResults: { textAlign: 'center', color: '#94a3b8', marginTop: 24, marginHorizontal: 20, fontSize: 15 },
+  noResultsHint: { fontSize: 15, color: '#64748b', textAlign: 'center', padding: 16, fontStyle: 'italic' },
   selectedDrug: { flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: '#e2e8f0' },
   pillImg: { width: 72, height: 72, borderRadius: 10, resizeMode: 'contain' },
   pillPlaceholder: { width: 72, height: 72, borderRadius: 10, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center' },
   selectedName: { fontSize: 16, fontWeight: '700', color: '#0f172a', marginBottom: 4 },
-  changeText: { color: '#0f4c81', fontSize: 13 },
-  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 15, marginBottom: 18, color: '#0f172a' },
-  freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  changeText: { color: '#0f4c81', fontSize: 15 },
+  label: { fontSize: 16, fontWeight: '600', color: '#1e293b', marginBottom: 6, marginTop: 8 },
+  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 16, marginBottom: 18, color: '#0f172a' },
+  freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 16, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
   freqSelected: { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
-  freqOptionText: { color: '#64748b', fontSize: 13 },
+  freqOptionText: { color: '#64748b', fontSize: 16 },
   freqSelectedText: { color: '#1e40af', fontWeight: '600' },
+  dateButton: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: 10, padding: 14, backgroundColor: '#fff', marginBottom: 18 },
+  dateButtonText: { fontSize: 16, color: '#475569' },
   saveBtn: { backgroundColor: '#0f4c81', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 8, marginBottom: 32 },
   saveBtnDisabled: { opacity: 0.6 },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
