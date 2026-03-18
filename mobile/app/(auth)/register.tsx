@@ -8,11 +8,16 @@ export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSignUp() {
     if (!name || !email || !password) { Alert.alert('Please fill in all fields'); return; }
     if (password.length < 6) { Alert.alert('Password must be at least 6 characters'); return; }
+    if (password !== confirmPassword) {
+      Alert.alert('Passwords do not match', 'Please enter the same password in both fields.');
+      return;
+    }
     setLoading(true);
     try {
       await signUp(email.trim().toLowerCase(), password, name.trim());
@@ -30,12 +35,21 @@ export default function RegisterScreen() {
         <Text style={styles.logo}>KinRx</Text>
         <Text style={styles.tagline}>Create your caregiver account</Text>
 
+        <Text style={styles.fieldLabel}>Full Name</Text>
         <TextInput style={styles.input} placeholder="Your full name" value={name} onChangeText={setName}
           autoCapitalize="words" placeholderTextColor="#94a3b8" />
+
+        <Text style={styles.fieldLabel}>Email</Text>
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail}
           autoCapitalize="none" keyboardType="email-address" placeholderTextColor="#94a3b8" />
+
+        <Text style={styles.fieldLabel}>Password</Text>
         <TextInput style={styles.input} placeholder="Password (min 6 characters)" value={password}
           onChangeText={setPassword} secureTextEntry placeholderTextColor="#94a3b8" />
+
+        <Text style={styles.fieldLabel}>Confirm Password</Text>
+        <TextInput style={styles.input} placeholder="Re-enter password" value={confirmPassword}
+          onChangeText={setConfirmPassword} secureTextEntry placeholderTextColor="#94a3b8" />
 
         <TouchableOpacity style={[styles.btn, loading && styles.btnDisabled]} onPress={handleSignUp} disabled={loading}>
           <Text style={styles.btnText}>{loading ? 'Creating account…' : 'Create Account'}</Text>
@@ -55,15 +69,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0fdfa' },
   inner: { flex: 1, justifyContent: 'center', paddingHorizontal: 28 },
   logo: { fontSize: 36, fontWeight: '800', color: '#0d9488', textAlign: 'center', marginBottom: 8 },
-  tagline: { fontSize: 15, color: '#64748b', textAlign: 'center', marginBottom: 40 },
+  tagline: { fontSize: 17, color: '#64748b', textAlign: 'center', marginBottom: 24 },
+  fieldLabel: { fontSize: 16, fontWeight: '600', color: '#1e293b', marginBottom: 6, marginTop: 16 },
   input: {
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12,
-    paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, marginBottom: 14, color: '#0f172a',
+    paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, marginBottom: 0, color: '#0f172a',
+    minHeight: 52,
   },
-  btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 8 },
+  btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 24 },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  btnText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
   link: { marginTop: 20, alignItems: 'center' },
-  linkText: { color: '#64748b', fontSize: 14 },
+  linkText: { color: '#64748b', fontSize: 16 },
   linkBold: { color: '#0d9488', fontWeight: '600' },
 });
