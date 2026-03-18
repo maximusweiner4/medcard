@@ -67,7 +67,8 @@ export default function AddMedicationScreen() {
         const candidates = await searchRxNorm(text);
         const seen = new Set<string>();
         const unique = candidates.filter((c) => {
-          const key = c.rxcui + (c.name || '');
+          if (!c.name?.trim()) return false;
+          const key = c.name.toLowerCase();
           if (seen.has(key)) return false;
           seen.add(key);
           return true;

@@ -7,11 +7,13 @@ export async function searchRxNorm(term: string) {
   const { data } = await axios.get(`${BASE}/approximateTerm.json`, {
     params: { term, maxEntries: 10 },
   });
-  return (data?.approximateGroup?.candidate ?? []).map((c: any) => ({
-    rxcui: c.rxcui,
-    name: c.name,
-    score: parseInt(c.score, 10),
-  }));
+  return (data?.approximateGroup?.candidate ?? [])
+    .filter((c: any) => c.name && c.name.trim())
+    .map((c: any) => ({
+      rxcui: c.rxcui,
+      name: (c.name as string).trim(),
+      score: parseInt(c.score, 10),
+    }));
 }
 
 export async function getPillImage(rxcui: string): Promise<string | null> {

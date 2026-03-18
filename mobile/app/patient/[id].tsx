@@ -7,8 +7,9 @@ import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import { patientsApi, caregiversApi, api } from '../../src/services/api';
 import { CaregiverRelation } from '../../src/types';
-import { Linking } from 'react-native';
 import { supabase } from '../../src/services/supabase';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 export default function PatientProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,9 +62,12 @@ export default function PatientProfileScreen() {
       if (!session?.access_token) throw new Error('Not authenticated');
       const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
       const url = `${BASE_URL}/api/patients/${patient!.id}/pdf?token=${encodeURIComponent(session.access_token)}`;
-      await Linking.openURL(url);
+      const fileUri = FileSystem.cacheDirectory + 'medications.pdf';
+      const { status } = await FileSystem.downloadAsync(url, fileUri);
+      if (status !== 200) throw new Error('Failed to download PDF');
+      await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
     } catch (err: any) {
-      Alert.alert('Export Error', err?.response?.data?.error || err?.message || 'Failed to export PDF');
+      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
     } finally {
       setExportLoading(false);
     }
