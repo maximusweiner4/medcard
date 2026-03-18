@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { medicationsApi } from '../../src/services/api';
 import { useMedicationStore } from '../../src/stores/medicationStore';
+import { showSuccess } from '../../src/utils/toast';
 import type { Medication } from '../../src/types';
 
 export default function MedicationDetailScreen() {
@@ -208,7 +209,7 @@ export default function MedicationDetailScreen() {
               { text: 'Cancel', style: 'cancel' },
               { text: 'Restart', onPress: async () => {
                 setActionLoading(true);
-                try { await restartMedication(id); }
+                try { await restartMedication(id); showSuccess('Medication restarted'); }
                 catch (e: any) { Alert.alert('Error', e?.message || 'Failed to restart medication'); }
                 finally { setActionLoading(false); }
               }},
