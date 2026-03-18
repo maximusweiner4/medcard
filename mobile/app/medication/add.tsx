@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { searchRxNorm, getPillImage } from '../../src/services/rxnorm';
+import { getPillImage } from '../../src/services/rxnorm';
+import { drugsApi } from '../../src/services/api';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import type { DrugSearchResult } from '../../src/types';
@@ -64,7 +65,7 @@ export default function AddMedicationScreen() {
     debounceTimerRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const candidates = await searchRxNorm(text);
+        const { data: candidates } = await drugsApi.search(text);
         const seen = new Set<string>();
         const unique = candidates.filter((c) => {
           if (!c.name?.trim()) return false;
