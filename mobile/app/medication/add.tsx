@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { getPillImage } from '../../src/services/rxnorm';
 import { drugsApi } from '../../src/services/api';
@@ -10,6 +9,19 @@ import { showSuccess } from '../../src/utils/toast';
 import type { DrugSearchResult } from '../../src/types';
 
 type Step = 'search' | 'details';
+
+function parseDateInput(input: string): string | null {
+  if (!input.trim()) return null;
+  const parsed = new Date(input.trim());
+  if (!isNaN(parsed.getTime())) return parsed.toISOString();
+  const parts = input.trim().split('/');
+  if (parts.length === 3) {
+    const [m, d, y] = parts;
+    const date = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    if (!isNaN(date.getTime())) return date.toISOString();
+  }
+  return null;
+}
 
 const FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every morning', 'Every evening', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Weekly', 'Other'];
 
@@ -34,8 +46,7 @@ export default function AddMedicationScreen() {
   const [indication, setIndication] = useState('');
   const [saving, setSaving] = useState(false);
   const [searchError, setSearchError] = useState(false);
-  const [refillDate, setRefillDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [refillDate, setRefillDate] = useState('');
   const [pillsRemaining, setPillsRemaining] = useState('');
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -112,7 +123,7 @@ export default function AddMedicationScreen() {
         prescriber: prescriber.trim() || undefined,
         indication: indication.trim() || undefined,
         pillImageUrl: selected.pillImageUrl,
-        nextRefillDate: refillDate?.toISOString() || undefined,
+        nextRefillDate: parseDateInput(refillDate) || undefined,
         pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim(), 10) : undefined,
       });
       showSuccess('Medication added');
@@ -211,22 +222,7 @@ export default function AddMedicationScreen() {
       <TextInput style={styles.input} placeholder="e.g. High blood pressure, Type 2 diabetes" value={indication} onChangeText={setIndication} placeholderTextColor="#94a3b8" />
 
       <Text style={styles.label}>Next Refill Date (optional)</Text>
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-        <Text style={styles.dateButtonText}>
-          {refillDate ? refillDate.toLocaleDateString() : 'Select date'}
-        </Text>
-      </TouchableOpacity>
-      {showDatePicker && (
-        <DateTimePicker
-          value={refillDate || new Date()}
-          mode="date"
-          display="default"
-          onChange={(_event, date) => {
-            setShowDatePicker(false);
-            if (date) setRefillDate(date);
-          }}
-        />
-      )}
+      <TextInput style={styles.input} placeholder="MM/DD/YYYY" value={refillDate} onChangeText={setRefillDate} placeholderTextColor="#94a3b8" />
 
       <Text style={styles.label}>Pills Remaining</Text>
       <TextInput style={styles.input} placeholder="e.g. 30" value={pillsRemaining} onChangeText={setPillsRemaining} keyboardType="numeric" placeholderTextColor="#94a3b8" />
@@ -260,8 +256,6 @@ const styles = StyleSheet.create({
   freqSelected: { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
   freqOptionText: { color: '#64748b', fontSize: 16 },
   freqSelectedText: { color: '#1e40af', fontWeight: '600' },
-  dateButton: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: 10, padding: 14, backgroundColor: '#fff', marginBottom: 18 },
-  dateButtonText: { fontSize: 16, color: '#475569' },
   saveBtn: { backgroundColor: '#0f4c81', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 8, marginBottom: 32 },
   saveBtnDisabled: { opacity: 0.6 },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },

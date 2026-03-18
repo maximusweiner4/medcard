@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { medicationsApi } from '../../../src/services/api';
 import { showSuccess } from '../../../src/utils/toast';
 
 const FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every morning', 'Every evening', 'Every 8 hours', 'Every 12 hours', 'As needed', 'Weekly', 'Other'];
+
+function parseDateInput(input: string): string | null {
+  if (!input.trim()) return null;
+  const parsed = new Date(input.trim());
+  if (!isNaN(parsed.getTime())) return parsed.toISOString();
+  const parts = input.trim().split('/');
+  if (parts.length === 3) {
+    const [m, d, y] = parts;
+    const date = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    if (!isNaN(date.getTime())) return date.toISOString();
+  }
+  return null;
+}
 
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,8 +36,7 @@ export default function EditMedicationScreen() {
   const [prescriber, setPrescriber] = useState('');
   const [indication, setIndication] = useState('');
   const [pharmacy, setPharmacy] = useState('');
-  const [refillDate, setRefillDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [refillDate, setRefillDate] = useState('');
   const [pillsRemaining, setPillsRemaining] = useState('');
 
   function fetchMed() {
@@ -42,7 +53,9 @@ export default function EditMedicationScreen() {
         setPrescriber(data.prescriber ?? '');
         setIndication(data.indication ?? '');
         setPharmacy(data.pharmacy ?? '');
-        setRefillDate(data.nextRefillDate ? new Date(data.nextRefillDate) : null);
+        setRefillDate(data.nextRefillDate
+          ? new Date(data.nextRefillDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+          : '');
         setPillsRemaining(data.pillsRemaining != null ? String(data.pillsRemaining) : '');
       })
       .catch(() => setError('Failed to load medication. Tap to retry.'))
@@ -72,7 +85,7 @@ export default function EditMedicationScreen() {
         prescriber: prescriber.trim() || null,
         indication: indication.trim() || null,
         pharmacy: pharmacy.trim() || null,
-        nextRefillDate: refillDate?.toISOString() ?? null,
+        nextRefillDate: parseDateInput(refillDate),
         pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim(), 10) : null,
       });
       showSuccess('Medication updated');
@@ -183,22 +196,14 @@ export default function EditMedicationScreen() {
       />
 
       <Text style={styles.label}>Next Refill Date (optional)</Text>
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-        <Text style={styles.dateButtonText}>
-          {refillDate ? refillDate.toLocaleDateString() : 'Select date'}
-        </Text>
-      </TouchableOpacity>
-      {showDatePicker && (
-        <DateTimePicker
-          value={refillDate || new Date()}
-          mode="date"
-          display="default"
-          onChange={(_event, date) => {
-            setShowDatePicker(false);
-            if (date) setRefillDate(date);
-          }}
-        />
-      )}
+      <TextInput
+        style={styles.input}
+        placeholder="MM/DD/YYYY"
+        value={refillDate}
+        onChangeText={setRefillDate}
+        placeholderTextColor="#94a3b8"
+        keyboardType="numeric"
+      />
 
       <Text style={styles.label}>Pills Remaining</Text>
       <TextInput
@@ -235,8 +240,6 @@ const styles = StyleSheet.create({
   freqSelected: { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
   freqOptionText: { color: '#64748b', fontSize: 16 },
   freqSelectedText: { color: '#1e40af', fontWeight: '600' },
-  dateButton: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: 10, padding: 14, backgroundColor: '#fff', marginBottom: 18 },
-  dateButtonText: { fontSize: 16, color: '#475569' },
   saveBtn: { backgroundColor: '#0f4c81', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 8, marginBottom: 32 },
   saveBtnDisabled: { opacity: 0.6 },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
