@@ -77,9 +77,13 @@ export default function PatientDisplayScreen() {
       </Text>
 
       <ScrollView contentContainerStyle={styles.list}>
-        {active.map((med) => (
-          <MedCard key={med.id} med={med} bg={cardBg} border={border} text={text} subText={subText} />
-        ))}
+        {active.length === 0 ? (
+          <Text style={[styles.noMeds, { color: subText }]}>No active medications on record.</Text>
+        ) : (
+          active.map((med) => (
+            <MedCard key={med.id} med={med} bg={cardBg} border={border} text={text} subText={subText} />
+          ))
+        )}
       </ScrollView>
 
       <Text style={[styles.footer, { color: subText }]}>
@@ -139,6 +143,7 @@ const styles = StyleSheet.create({
   noAllergyText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   countText: { fontSize: 14, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 6 },
   list: { paddingHorizontal: 16, paddingBottom: 32 },
+  noMeds: { fontSize: 18, textAlign: 'center', paddingVertical: 40, paddingHorizontal: 20 },
   card: { borderRadius: 14, borderWidth: 1, padding: 16, marginBottom: 12, flexDirection: 'row', gap: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   cardLeft: {},
   pillImg: { width: 80, height: 80, borderRadius: 10, resizeMode: 'contain' },

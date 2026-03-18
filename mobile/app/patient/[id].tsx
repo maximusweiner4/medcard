@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, ActivityIndicator, TextInput } from 'react-native';
+import { showSuccess } from '../../src/utils/toast';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -76,8 +77,9 @@ export default function PatientProfileScreen() {
         try {
           await caregiversApi.remove(relationId);
           setCaregivers((prev) => prev.filter((c) => c.id !== relationId));
+          showSuccess('Caregiver removed');
         } catch (err: any) {
-          Alert.alert('Error', err?.response?.data?.error || 'Failed to remove caregiver');
+          Alert.alert('Error', err?.response?.data?.error || err?.message || 'Failed to remove caregiver');
         }
       }},
     ]);
@@ -92,9 +94,9 @@ export default function PatientProfileScreen() {
       setCaregiverRelationship('');
       const { data } = await patientsApi.get(patient!.id);
       setCaregivers(data.caregivers ?? []);
-      Alert.alert('Success', 'Caregiver added to this patient.');
+      showSuccess('Caregiver added');
     } catch (err: any) {
-      Alert.alert('Error', err?.response?.data?.error || 'Failed to invite caregiver');
+      Alert.alert('Error', err?.response?.data?.error || err?.message || 'Failed to invite caregiver');
     } finally {
       setInviteLoading(false);
     }

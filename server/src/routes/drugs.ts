@@ -7,6 +7,8 @@ import { getPillAppearance } from '../services/dailymed.service';
 const router = Router();
 router.use(requireAuth);
 
+const RXCUI_REGEX = /^\d+$/;
+
 /** GET /api/drugs/search?term= — fuzzy drug name search via RxNorm */
 router.get('/search', async (req, res, next) => {
   try {
@@ -20,6 +22,7 @@ router.get('/search', async (req, res, next) => {
 
 /** GET /api/drugs/:rxcui — drug details from RxNorm */
 router.get('/:rxcui', async (req, res, next) => {
+  if (!RXCUI_REGEX.test(req.params.rxcui)) { res.status(400).json({ error: 'Invalid RxCUI format' }); return; }
   try {
     const details = await getDrugDetails(req.params.rxcui);
     if (!details) { res.status(404).json({ error: 'Drug not found' }); return; }
@@ -29,6 +32,7 @@ router.get('/:rxcui', async (req, res, next) => {
 
 /** GET /api/drugs/:rxcui/image — primary pill image URL */
 router.get('/:rxcui/image', async (req, res, next) => {
+  if (!RXCUI_REGEX.test(req.params.rxcui)) { res.status(400).json({ error: 'Invalid RxCUI format' }); return; }
   try {
     const images = await getPillImages(req.params.rxcui);
     res.json({ images, primary: images[0]?.imageUrl ?? null });
@@ -37,6 +41,7 @@ router.get('/:rxcui/image', async (req, res, next) => {
 
 /** GET /api/drugs/:rxcui/appearance — pill color/shape/imprint via DailyMed */
 router.get('/:rxcui/appearance', async (req, res, next) => {
+  if (!RXCUI_REGEX.test(req.params.rxcui)) { res.status(400).json({ error: 'Invalid RxCUI format' }); return; }
   try {
     const ndcs = await getNdcs(req.params.rxcui);
     if (!ndcs.length) { res.json(null); return; }
@@ -47,6 +52,7 @@ router.get('/:rxcui/appearance', async (req, res, next) => {
 
 /** GET /api/drugs/:rxcui/products — dose form options */
 router.get('/:rxcui/products', async (req, res, next) => {
+  if (!RXCUI_REGEX.test(req.params.rxcui)) { res.status(400).json({ error: 'Invalid RxCUI format' }); return; }
   try {
     const details = await getDrugDetails(req.params.rxcui);
     if (!details) { res.status(404).json({ error: 'Drug not found' }); return; }
