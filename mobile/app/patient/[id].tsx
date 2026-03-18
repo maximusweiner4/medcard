@@ -111,7 +111,7 @@ export default function PatientProfileScreen() {
         {patient.allergies.length > 0 ? (
           <View style={styles.allergyBox}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-              <Ionicons name="warning-outline" size={14} color="#dc2626" />
+              <Ionicons name="warning-outline" size={20} color="#dc2626" />
               <Text style={styles.allergyLabel}>Allergies</Text>
             </View>
             <Text style={styles.allergyValues}>{patient.allergies.join(', ')}</Text>
@@ -293,13 +293,13 @@ const styles = StyleSheet.create({
   profileCard: { backgroundColor: '#fff', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, elevation: 3 },
   name: { fontSize: 24, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
   dob: { fontSize: 14, color: '#64748b', marginBottom: 16 },
-  allergyBox: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fca5a5', borderRadius: 10, padding: 12, width: '100%', alignItems: 'center' },
-  allergyLabel: { fontSize: 13, fontWeight: '700', color: '#dc2626', marginBottom: 2 },
-  allergyValues: { fontSize: 14, color: '#7f1d1d' },
+  allergyBox: { backgroundColor: '#fff7ed', borderWidth: 2, borderColor: '#dc2626', borderRadius: 10, padding: 14, width: '100%', alignItems: 'center' },
+  allergyLabel: { fontSize: 18, fontWeight: '700', color: '#dc2626', marginBottom: 2 },
+  allergyValues: { fontSize: 17, color: '#7f1d1d' },
   statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   stat: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
   statNum: { fontSize: 32, fontWeight: '800', color: '#0f4c81' },
-  statLabel: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  statLabel: { fontSize: 15, color: '#64748b', marginTop: 2 },
   actionBtn: { backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   displayBtn: { backgroundColor: '#f0fdf4', borderColor: '#86efac' },
   shareBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
@@ -315,20 +315,20 @@ const styles = StyleSheet.create({
   interactionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   interactionDrugs: { fontSize: 14, fontWeight: '700', color: '#0f172a', flex: 1, marginRight: 8 },
   severityBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
-  severityText: { color: '#fff', fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-  interactionDesc: { fontSize: 13, color: '#475569', lineHeight: 20 },
-  checkedAt: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 16 },
+  severityText: { color: '#fff', fontSize: 16, fontWeight: '700', textTransform: 'uppercase' },
+  interactionDesc: { fontSize: 15, color: '#475569', lineHeight: 22 },
+  checkedAt: { fontSize: 15, color: '#94a3b8', textAlign: 'center', marginTop: 16 },
   sectionToggle: { backgroundColor: '#fff', borderRadius: 12, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   sectionToggleText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   caregiverSection: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   emptyCaregiverText: { color: '#94a3b8', fontSize: 14, textAlign: 'center', paddingVertical: 8 },
   caregiverRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  caregiverName: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
-  caregiverEmail: { fontSize: 12, color: '#64748b', marginTop: 2 },
-  caregiverRelationship: { fontSize: 12, color: '#0d9488', marginTop: 1 },
+  caregiverName: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
+  caregiverEmail: { fontSize: 15, color: '#64748b', marginTop: 2 },
+  caregiverRelationship: { fontSize: 15, color: '#0d9488', marginTop: 1 },
   permBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, marginRight: 8 },
-  permText: { fontSize: 11, fontWeight: '600' },
-  removeBtn: { padding: 4 },
+  permText: { fontSize: 13, fontWeight: '600' },
+  removeBtn: { padding: 12, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   inviteForm: { marginTop: 16, gap: 10 },
   inviteTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a', marginBottom: 4 },
   inviteInput: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#0f172a' },
