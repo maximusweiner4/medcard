@@ -56,7 +56,7 @@ export default function AddMedicationScreen() {
       try {
         const { data: candidates } = await drugsApi.search(text);
         const seen = new Set<string>();
-        const unique = candidates.filter((c) => {
+        const unique = candidates.filter((c: DrugSearchResult) => {
           if (!c.name?.trim()) return false;
           const key = c.name.toLowerCase();
           if (seen.has(key)) return false;
