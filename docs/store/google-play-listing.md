@@ -6,7 +6,7 @@
 - **Category:** Medical
 - **Content Rating:** Everyone
 - **Privacy Policy URL:** https://maximusweiner4.github.io/kinrx/privacy
-- **Contact Email:** max.weiner4@gmail.com
+- **Contact Email:** kinrx.app@gmail.com
 
 ## Short Description (80 chars max)
 ```
@@ -53,4 +53,4 @@ medication tracker, pill reminder, caregiver app, drug interactions, refill trac
 | Health info (medications, doses) | Yes | Only with invited caregivers | Core app function |
 
 - Data encrypted in transit: Yes (HTTPS)
-- User can request deletion: Yes — contact max.weiner4@gmail.com
+- User can request deletion: Yes — contact kinrx.app@gmail.com
