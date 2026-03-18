@@ -40,13 +40,21 @@
           "icon": "./assets/notification-icon.png",
           "color": "#0d9488"
         }
-      ]
+      ],
+      "expo-web-browser",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {
         "projectId": "94fef775-74b6-4a54-abd4-e9e5abf3ba00"
       }
     },
-    "owner": "max.weiner"
+    "owner": "max.weiner",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/94fef775-74b6-4a54-abd4-e9e5abf3ba00"
+    }
   }
 }
