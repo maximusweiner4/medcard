@@ -4,11 +4,14 @@ import { prisma } from '../lib/prisma';
 import { stripHtml } from '../lib/sanitize';
 
 const router = Router();
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 router.use(requireAuth);
 
 /** PATCH /api/caregivers/:id — update permission level or relationship */
 router.patch('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const relation = await prisma.caregiverPatient.findUnique({ where: { id: req.params.id } });
     if (!relation) { res.status(404).json({ error: 'Caregiver relation not found' }); return; }
 
@@ -40,6 +43,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
 /** DELETE /api/caregivers/:id — remove a caregiver from a patient */
 router.delete('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const relation = await prisma.caregiverPatient.findUnique({ where: { id: req.params.id } });
     if (!relation) { res.status(404).json({ error: 'Not found' }); return; }
 

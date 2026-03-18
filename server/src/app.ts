@@ -32,7 +32,7 @@ app.use(cors({ origin: corsOrigin || '*' }));
 app.use(morgan(':method :url :status :response-time ms', {
   skip: (req) => req.url.startsWith('/health'),
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50kb' }));
 
 // Health check (used by Railway)
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));

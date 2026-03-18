@@ -4,6 +4,8 @@ import { prisma } from '../lib/prisma';
 import { stripHtml } from '../lib/sanitize';
 
 const router = Router();
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 router.use(requireAuth);
 
 async function assertAccess(medicationId: string, userId: string, requireAdmin = false) {
@@ -22,6 +24,7 @@ async function assertAccess(medicationId: string, userId: string, requireAdmin =
 /** GET /api/medications/:id */
 router.get('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const med = await assertAccess(req.params.id, req.userId!);
     if (!med) { res.status(404).json({ error: 'Medication not found' }); return; }
     res.json(med);
@@ -31,6 +34,7 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
 /** PATCH /api/medications/:id — edit medication fields */
 router.patch('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Medication not found or insufficient permission' }); return; }
 
@@ -100,6 +104,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
 /** PATCH /api/medications/:id/stop — mark inactive */
 router.patch('/:id/stop', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Not found or insufficient permission' }); return; }
 
@@ -127,6 +132,7 @@ router.patch('/:id/stop', async (req: AuthRequest, res, next) => {
 /** PATCH /api/medications/:id/restart — mark active again */
 router.patch('/:id/restart', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Not found or insufficient permission' }); return; }
 
@@ -154,6 +160,7 @@ router.patch('/:id/restart', async (req: AuthRequest, res, next) => {
 /** DELETE /api/medications/:id */
 router.delete('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const existing = await assertAccess(req.params.id, req.userId!, true);
     if (!existing) { res.status(404).json({ error: 'Not found or insufficient permission' }); return; }
     await prisma.$transaction([
@@ -175,6 +182,7 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
 /** GET /api/medications/:id/history — change log */
 router.get('/:id/history', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const med = await assertAccess(req.params.id, req.userId!);
     if (!med) { res.status(404).json({ error: 'Medication not found' }); return; }
 

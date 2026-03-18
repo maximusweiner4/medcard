@@ -18,7 +18,7 @@ export interface DrugDetails {
 /** Fuzzy drug name search — handles misspellings */
 export async function searchDrugs(term: string): Promise<RxNormCandidate[]> {
   const { data } = await axios.get(`${BASE}/approximateTerm.json`, {
-    params: { term, maxEntries: 20 },
+    params: { term, maxEntries: 20 }, timeout: 5000,
   });
   const candidates = data?.approximateGroup?.candidate ?? [];
 
@@ -39,7 +39,7 @@ export async function searchDrugs(term: string): Promise<RxNormCandidate[]> {
 
 /** Get detailed properties for an RxCUI */
 export async function getDrugDetails(rxcui: string): Promise<DrugDetails | null> {
-  const { data } = await axios.get(`${BASE}/rxcui/${rxcui}/properties.json`);
+  const { data } = await axios.get(`${BASE}/rxcui/${rxcui}/properties.json`, { timeout: 5000 });
   const props = data?.properties;
   if (!props) return null;
   return { rxcui: props.rxcui, name: props.name, synonym: props.synonym, tty: props.tty };
@@ -47,13 +47,13 @@ export async function getDrugDetails(rxcui: string): Promise<DrugDetails | null>
 
 /** Get NDC codes for a given RxCUI (used to look up pill appearance) */
 export async function getNdcs(rxcui: string): Promise<string[]> {
-  const { data } = await axios.get(`${BASE}/rxcui/${rxcui}/ndcs.json`);
+  const { data } = await axios.get(`${BASE}/rxcui/${rxcui}/ndcs.json`, { timeout: 5000 });
   return data?.ndcGroup?.ndcList?.ndc ?? [];
 }
 
 /** Get dose form options for a given drug name */
 export async function getDrugProducts(name: string): Promise<any[]> {
-  const { data } = await axios.get(`${BASE}/drugs.json`, { params: { name } });
+  const { data } = await axios.get(`${BASE}/drugs.json`, { params: { name }, timeout: 5000 });
   const groups = data?.drugGroup?.conceptGroup ?? [];
   const products: any[] = [];
   for (const group of groups) {

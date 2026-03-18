@@ -5,6 +5,8 @@ import { createShareLink } from '../services/share.service';
 import { stripHtml } from '../lib/sanitize';
 
 const router = Router();
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 router.use(requireAuth);
 
 const patientInclude = {
@@ -100,6 +102,7 @@ router.post('/', async (req: AuthRequest, res, next) => {
 /** GET /api/patients/:id */
 router.get('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const patient = await prisma.patient.findFirst({
       where: {
         id: req.params.id,
@@ -115,6 +118,7 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
 /** PATCH /api/patients/:id */
 router.patch('/:id', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId, permissionLevel: 'ADMIN' },
     });
@@ -175,6 +179,7 @@ router.patch('/:id', async (req: AuthRequest, res, next) => {
 /** POST /api/patients/:id/share — generate share link + QR code */
 router.post('/:id/share', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId },
     });
@@ -191,7 +196,7 @@ router.post('/:id/share', async (req: AuthRequest, res, next) => {
     const result = await createShareLink(
       req.params.id,
       req.userId!,
-      expiresAt ? new Date(expiresAt) : undefined
+      expiresAt ? new Date(expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     );
     res.json(result);
   } catch (err) { next(err); }
@@ -200,6 +205,7 @@ router.post('/:id/share', async (req: AuthRequest, res, next) => {
 /** GET /api/patients/:id/medications — all medications for a patient */
 router.get('/:id/medications', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId },
     });
@@ -217,6 +223,7 @@ router.get('/:id/medications', async (req: AuthRequest, res, next) => {
 /** POST /api/patients/:id/medications — add a medication */
 router.post('/:id/medications', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId, permissionLevel: 'ADMIN' },
     });
@@ -294,6 +301,7 @@ router.post('/:id/medications', async (req: AuthRequest, res, next) => {
 /** POST /api/patients/:id/caregivers — invite a caregiver */
 router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const isAdmin = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId, permissionLevel: 'ADMIN' },
     });
@@ -345,6 +353,7 @@ router.post('/:id/caregivers', async (req: AuthRequest, res, next) => {
 /** GET /api/patients/:id/interactions — check drug interactions via RxNorm */
 router.get('/:id/interactions', async (req: AuthRequest, res, next) => {
   try {
+    if (!UUID_REGEX.test(req.params.id)) { res.status(400).json({ error: 'Invalid ID format' }); return; }
     const caregiver = await prisma.caregiverPatient.findFirst({
       where: { patientId: req.params.id, caregiverId: req.userId },
     });

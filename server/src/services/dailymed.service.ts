@@ -12,13 +12,13 @@ export interface PillAppearance {
 /** Look up pill appearance by NDC code */
 export async function getPillAppearance(ndc: string): Promise<PillAppearance | null> {
   try {
-    const { data } = await axios.get(`${BASE}/spls.json`, { params: { ndc } });
+    const { data } = await axios.get(`${BASE}/spls.json`, { params: { ndc }, timeout: 5000 });
     const spls = data?.data ?? [];
     if (spls.length === 0) return null;
 
     // Fetch the full SPL detail for the first result
     const setId = spls[0].setid;
-    const { data: detail } = await axios.get(`${BASE}/spls/${setId}.json`);
+    const { data: detail } = await axios.get(`${BASE}/spls/${setId}.json`, { timeout: 5000 });
     const product = detail?.data?.products?.[0];
     if (!product) return null;
 
@@ -37,7 +37,7 @@ export async function getPillAppearance(ndc: string): Promise<PillAppearance | n
 export async function searchDailyMed(drugName: string): Promise<any[]> {
   try {
     const { data } = await axios.get(`${BASE}/spls.json`, {
-      params: { drug_name: drugName, pagesize: 5 },
+      params: { drug_name: drugName, pagesize: 5 }, timeout: 5000,
     });
     return data?.data ?? [];
   } catch {

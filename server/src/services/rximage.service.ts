@@ -12,7 +12,7 @@ export interface PillImage {
 /** Fetch pill images by RxCUI. Returns up to 5 images. */
 export async function getPillImages(rxcui: string): Promise<PillImage[]> {
   try {
-    const { data } = await axios.get(`${BASE}/rxnav`, { params: { rxcui } });
+    const { data } = await axios.get(`${BASE}/rxnav`, { params: { rxcui }, timeout: 5000 });
     const images = data?.nlmRxImages ?? [];
     return images.slice(0, 5).map((img: any) => ({
       imageUrl: img.imageUrl,

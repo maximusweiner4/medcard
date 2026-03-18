@@ -12,6 +12,7 @@ router.get('/search', async (req, res, next) => {
   try {
     const term = String(req.query.term || '').trim();
     if (!term) { res.status(400).json({ error: 'term is required' }); return; }
+    if (term.length > 200) { res.status(400).json({ error: 'Search term too long' }); return; }
     const results = await searchDrugs(term);
     res.json(results);
   } catch (err) { next(err); }

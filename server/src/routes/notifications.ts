@@ -2,8 +2,11 @@ import { Router } from 'express';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { prisma } from '../lib/prisma';
 import { checkAndSendRefillReminders } from '../services/notifications.service';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
+
+const cronLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
 
 /** POST /api/notifications/token — save Expo push token for the current user */
 router.post('/token', requireAuth, async (req: AuthRequest, res, next) => {
@@ -22,7 +25,7 @@ router.post('/token', requireAuth, async (req: AuthRequest, res, next) => {
 
 /** POST /api/notifications/check-refills — trigger refill reminder check
  *  Protected by a secret key header — call from Railway cron or external scheduler */
-router.post('/check-refills', async (req, res, next) => {
+router.post('/check-refills', cronLimiter, async (req, res, next) => {
   try {
     const secret = req.headers['x-cron-secret'];
     if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {

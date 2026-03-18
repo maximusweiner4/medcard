@@ -21,27 +21,34 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
 
   const token = authHeader.slice(7);
 
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    res.status(401).json({ error: 'Invalid or expired token' });
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'];
+  try {
+    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
+    if (error || !supabaseUser) {
+      res.status(401).json({ error: 'Invalid or expired token' });
+      return;
+    }
+    user = supabaseUser;
+  } catch (e) {
+    res.status(503).json({ error: 'Auth service unavailable' });
     return;
   }
 
   // Look up user record — only create if not found (avoids noisy upsert write on every request)
-  let dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+  let dbUser = await prisma.user.findUnique({ where: { supabaseId: user!.id } });
   if (!dbUser) {
     try {
       dbUser = await prisma.user.create({
         data: {
-          supabaseId: user.id,
-          email: user.email || '',
-          name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          supabaseId: user!.id,
+          email: user!.email || '',
+          name: user!.user_metadata?.name || user!.email?.split('@')[0] || 'User',
         },
       });
     } catch (e: any) {
       if (e.code === 'P2002') {
         // Concurrent first-login — another request already created the record
-        dbUser = await prisma.user.findUnique({ where: { supabaseId: user.id } });
+        dbUser = await prisma.user.findUnique({ where: { supabaseId: user!.id } });
       } else {
         throw e;
       }
@@ -53,6 +60,6 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
   }
 
   req.userId = dbUser.id;
-  req.supabaseId = user.id;
+  req.supabaseId = user!.id;
   next();
 }
