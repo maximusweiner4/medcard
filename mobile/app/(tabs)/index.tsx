@@ -67,7 +67,7 @@ export default function PatientsScreen() {
                 <Text style={styles.cardSub}>{item.medications?.length ?? 0} active medications</Text>
                 {item.allergies.length > 0 && (
                   <View style={styles.allergyChip}>
-                    <Ionicons name="warning-outline" size={12} color="#dc2626" style={{ marginRight: 4 }} />
+                    <Ionicons name="warning-outline" size={18} color="#dc2626" style={{ marginRight: 4 }} />
                     <Text style={styles.allergyText} numberOfLines={2} ellipsizeMode="tail">{item.allergies.join(', ')}</Text>
                   </View>
                 )}
@@ -107,16 +107,16 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56, backgroundColor: '#0d9488' },
   greeting: { fontSize: 20, fontWeight: '700', color: '#fff' },
-  signOut: { color: '#99f6e4', fontSize: 14 },
+  signOut: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   emptyTitle: { fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 8 },
   emptyText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
   card: { backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 10, borderRadius: 12, padding: 16, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   cardLeft: { flex: 1 },
   cardName: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
-  cardSub: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  allergyChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef2f2', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginTop: 8, alignSelf: 'flex-start' },
-  allergyText: { color: '#dc2626', fontSize: 12, fontWeight: '500' },
+  cardSub: { fontSize: 16, color: '#64748b', marginTop: 2 },
+  allergyChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff7ed', borderWidth: 2, borderColor: '#dc2626', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, marginTop: 8, alignSelf: 'flex-start' },
+  allergyText: { color: '#dc2626', fontSize: 18, fontWeight: '700' },
   fab: { position: 'absolute', bottom: 24, right: 20, backgroundColor: '#0d9488', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 14, borderRadius: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 5 },
   fabText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   modal: { flex: 1, padding: 24, paddingTop: 32, backgroundColor: '#fff' },
