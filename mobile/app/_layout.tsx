@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../src/stores/authStore';
 import { useBiometricStore } from '../src/stores/biometricStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
@@ -105,6 +106,7 @@ export default function RootLayout() {
       <Stack.Screen name="medication/edit/[id]" options={{ headerShown: true, title: 'Edit Medication' }} />
       <Stack.Screen name="patient-display" options={{ headerShown: false }} />
     </Stack>
+    <Toast />
     </ErrorBoundary>
   );
 }
