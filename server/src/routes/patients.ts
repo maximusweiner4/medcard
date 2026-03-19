@@ -388,6 +388,11 @@ router.get('/:id/interactions', async (req: AuthRequest, res, next) => {
       } finally {
         clearTimeout(timeout);
       }
+      if (rxResponse!.status === 404) {
+        // RxNorm returns 404 when no interactions are found — this is a valid "no results" response
+        res.json({ interactions: [], checkedAt: new Date().toISOString() });
+        return;
+      }
       if (!rxResponse!.ok) {
         res.status(502).json({ error: `RxNorm service error (HTTP ${rxResponse!.status}). Try again later.` });
         return;

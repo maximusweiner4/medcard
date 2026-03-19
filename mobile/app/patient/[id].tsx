@@ -8,8 +8,8 @@ import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import { patientsApi, caregiversApi, api } from '../../src/services/api';
 import { CaregiverRelation } from '../../src/types';
-import { supabase } from '../../src/services/supabase';
-import * as WebBrowser from 'expo-web-browser';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 export default function PatientProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,13 +58,14 @@ export default function PatientProfileScreen() {
   async function exportPdf() {
     setExportLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Not authenticated');
-      const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const url = `${BASE_URL}/api/patients/${patient!.id}/pdf?token=${encodeURIComponent(session.access_token)}`;
-      await WebBrowser.openBrowserAsync(url);
+      // Download via axios (auth header added automatically by interceptor)
+      const response = await api.get(`/patients/${patient!.id}/pdf`, { responseType: 'arraybuffer' });
+      const base64 = Buffer.from(response.data).toString('base64');
+      const fileUri = FileSystem.documentDirectory + 'medication-list.pdf';
+      await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+      await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', dialogTitle: 'Save or Share Medication List' });
     } catch (err: any) {
-      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
+      Alert.alert('Export Error', err?.response?.data?.error || err?.message || 'Failed to export PDF');
     } finally {
       setExportLoading(false);
     }

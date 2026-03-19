@@ -25,20 +25,21 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
   fetchMedications: async (patientId, showStopped = false) => {
     _latestMedFetchId = patientId;
-    set({ medications: [], loading: true, error: null });
+    set({ loading: true, error: null });
+    // Warm-start: show cached data immediately so the list is never blank
+    try {
+      const cached = await AsyncStorage.getItem(`cache:medications:${patientId}`);
+      if (cached && patientId === _latestMedFetchId) {
+        set({ medications: JSON.parse(cached) });
+      }
+    } catch {}
     try {
       const { data } = await patientsApi.getMedications(patientId, showStopped);
       if (patientId !== _latestMedFetchId) return; // discard stale fetch
       set({ medications: data });
       try { await AsyncStorage.setItem(`cache:medications:${patientId}`, JSON.stringify(data)); } catch {}
     } catch (err: any) {
-      try {
-        const cached = await AsyncStorage.getItem(`cache:medications:${patientId}`);
-        if (cached) {
-          set({ medications: JSON.parse(cached), error: 'Showing cached data (offline)', loading: false });
-          return;
-        }
-      } catch {}
+      if (patientId !== _latestMedFetchId) return;
       set({ error: err?.response?.data?.error || err?.message || 'Failed to load medications' });
     } finally {
       set({ loading: false });
