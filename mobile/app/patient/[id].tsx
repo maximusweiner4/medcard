@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, TextInput } from 'react-native';
 import { showSuccess } from '../../src/utils/toast';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,9 +17,6 @@ export default function PatientProfileScreen() {
   const { medications, fetchMedications } = useMedicationStore();
   const router = useRouter();
 
-  const [interactionLoading, setInteractionLoading] = useState(false);
-  const [interactionResult, setInteractionResult] = useState<{ interactions: any[]; message?: string; checkedAt?: string } | null>(null);
-  const [interactionModalVisible, setInteractionModalVisible] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [caregivers, setCaregivers] = useState<CaregiverRelation[]>([]);
   const [caregiverEmail, setCaregiverEmail] = useState('');
@@ -42,23 +39,9 @@ export default function PatientProfileScreen() {
 
   const active = medications.filter((m) => m.isActive);
 
-  async function checkInteractions() {
-    setInteractionLoading(true);
-    try {
-      const { data } = await patientsApi.checkInteractions(patient!.id);
-      setInteractionResult(data);
-      setInteractionModalVisible(true);
-    } catch (err: any) {
-      Alert.alert('Error', err?.response?.data?.error || 'Failed to check interactions');
-    } finally {
-      setInteractionLoading(false);
-    }
-  }
-
   async function exportPdf() {
     setExportLoading(true);
     try {
-      // Download via axios (auth header added automatically by interceptor)
       const response = await api.get(`/patients/${patient!.id}/pdf`, { responseType: 'arraybuffer' });
       const base64 = Buffer.from(response.data).toString('base64');
       const fileUri = FileSystem.documentDirectory + 'medication-list.pdf';
@@ -140,20 +123,12 @@ export default function PatientProfileScreen() {
         </View>
       </View>
 
-      <TouchableOpacity
-        style={[styles.actionBtn, styles.interactionBtn, { opacity: interactionLoading ? 0.6 : 1 }]}
-        onPress={checkInteractions}
-        disabled={interactionLoading}
-      >
-        {interactionLoading ? (
-          <ActivityIndicator color="#7c3aed" size="small" />
-        ) : (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Ionicons name="git-compare-outline" size={18} color="#7c3aed" />
-            <Text style={[styles.actionBtnText, { color: '#7c3aed' }]}>Check Drug Interactions</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      <View style={styles.pharmacistTip}>
+        <Ionicons name="storefront-outline" size={18} color="#0f766e" style={{ marginTop: 1 }} />
+        <Text style={styles.pharmacistTipText}>
+          Bring this medication list to every doctor visit and pharmacy. Ask your pharmacist to review for interactions.
+        </Text>
+      </View>
 
       <TouchableOpacity
         style={[styles.actionBtn, styles.exportBtn, { opacity: exportLoading ? 0.6 : 1 }]}
@@ -161,7 +136,10 @@ export default function PatientProfileScreen() {
         disabled={exportLoading}
       >
         {exportLoading ? <ActivityIndicator color="#0f4c81" size="small" /> :
-          <Text style={[styles.actionBtnText, { color: '#0f4c81' }]}>Export PDF</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="document-outline" size={18} color="#0f4c81" />
+            <Text style={[styles.actionBtnText, { color: '#0f4c81' }]}>Export PDF</Text>
+          </View>
         }
       </TouchableOpacity>
 
@@ -248,51 +226,6 @@ export default function PatientProfileScreen() {
           </View>
         </View>
       )}
-
-      <Modal visible={interactionModalVisible} animationType="slide" presentationStyle="pageSheet">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Drug Interactions</Text>
-            <TouchableOpacity onPress={() => setInteractionModalVisible(false)}>
-              <Ionicons name="close" size={24} color="#64748b" />
-            </TouchableOpacity>
-          </View>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
-            <View style={styles.disclaimerBox}>
-              <Ionicons name="warning-outline" size={16} color="#92400e" style={{ marginTop: 1 }} />
-              <Text style={styles.disclaimerText}>
-                Powered by NLM RxNorm (DrugBank/ONCHigh). Coverage is incomplete — many interactions are not in this database. This is NOT a substitute for pharmacist or prescriber review.
-              </Text>
-            </View>
-            {interactionResult?.message ? (
-              <View style={styles.noInteractionsBox}>
-                <Ionicons name="information-circle-outline" size={32} color="#0d9488" />
-                <Text style={styles.noInteractionsText}>{interactionResult.message}</Text>
-              </View>
-            ) : interactionResult?.interactions.length === 0 ? (
-              <View style={styles.noInteractionsBox}>
-                <Ionicons name="checkmark-circle-outline" size={32} color="#16a34a" />
-                <Text style={styles.noInteractionsText}>No interactions found in RxNorm database.</Text>
-              </View>
-            ) : (
-              interactionResult?.interactions.map((item, idx) => (
-                <View key={idx} style={styles.interactionItem}>
-                  <View style={styles.interactionHeader}>
-                    <Text style={styles.interactionDrugs}>{item.drug1} + {item.drug2}</Text>
-                    <View style={[styles.severityBadge, { backgroundColor: item.severity === 'high' ? '#dc2626' : item.severity === 'moderate' ? '#f59e0b' : '#64748b' }]}>
-                      <Text style={styles.severityText}>{item.severity}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.interactionDesc}>{item.description}</Text>
-                </View>
-              ))
-            )}
-            {interactionResult?.checkedAt && (
-              <Text style={styles.checkedAt}>Checked: {new Date(interactionResult.checkedAt).toLocaleString()}</Text>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }
@@ -309,26 +242,13 @@ const styles = StyleSheet.create({
   stat: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
   statNum: { fontSize: 32, fontWeight: '800', color: '#0f4c81' },
   statLabel: { fontSize: 15, color: '#64748b', marginTop: 2 },
+  pharmacistTip: { flexDirection: 'row', gap: 10, backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#86efac', borderRadius: 12, padding: 14, marginBottom: 16, alignItems: 'flex-start' },
+  pharmacistTipText: { flex: 1, fontSize: 14, color: '#065f46', lineHeight: 20 },
   actionBtn: { backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   displayBtn: { backgroundColor: '#f0fdf4', borderColor: '#86efac' },
   shareBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
-  actionBtnText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
-  interactionBtn: { backgroundColor: '#f5f3ff', borderColor: '#c4b5fd' },
   exportBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
-  modalContainer: { flex: 1, backgroundColor: '#f8fafc' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', backgroundColor: '#fff' },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
-  disclaimerBox: { flexDirection: 'row', gap: 8, backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#fde68a', borderRadius: 10, padding: 12, marginBottom: 16 },
-  disclaimerText: { flex: 1, fontSize: 12, color: '#92400e', lineHeight: 18 },
-  noInteractionsBox: { alignItems: 'center', padding: 32, gap: 12 },
-  noInteractionsText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
-  interactionItem: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0' },
-  interactionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  interactionDrugs: { fontSize: 14, fontWeight: '700', color: '#0f172a', flex: 1, marginRight: 8 },
-  severityBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
-  severityText: { color: '#fff', fontSize: 16, fontWeight: '700', textTransform: 'uppercase' },
-  interactionDesc: { fontSize: 15, color: '#475569', lineHeight: 22 },
-  checkedAt: { fontSize: 15, color: '#94a3b8', textAlign: 'center', marginTop: 16 },
+  actionBtnText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   sectionToggle: { backgroundColor: '#fff', borderRadius: 12, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   sectionToggleText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   caregiverSection: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
