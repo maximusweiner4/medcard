@@ -258,6 +258,12 @@ export default function PatientProfileScreen() {
             </TouchableOpacity>
           </View>
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+            <View style={styles.disclaimerBox}>
+              <Ionicons name="warning-outline" size={16} color="#92400e" style={{ marginTop: 1 }} />
+              <Text style={styles.disclaimerText}>
+                Powered by NLM RxNorm (DrugBank/ONCHigh). Coverage is incomplete — many interactions are not in this database. This is NOT a substitute for pharmacist or prescriber review.
+              </Text>
+            </View>
             {interactionResult?.message ? (
               <View style={styles.noInteractionsBox}>
                 <Ionicons name="information-circle-outline" size={32} color="#0d9488" />
@@ -266,7 +272,7 @@ export default function PatientProfileScreen() {
             ) : interactionResult?.interactions.length === 0 ? (
               <View style={styles.noInteractionsBox}>
                 <Ionicons name="checkmark-circle-outline" size={32} color="#16a34a" />
-                <Text style={styles.noInteractionsText}>No known interactions found.</Text>
+                <Text style={styles.noInteractionsText}>No interactions found in RxNorm database.</Text>
               </View>
             ) : (
               interactionResult?.interactions.map((item, idx) => (
@@ -312,6 +318,8 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1, backgroundColor: '#f8fafc' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', backgroundColor: '#fff' },
   modalTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
+  disclaimerBox: { flexDirection: 'row', gap: 8, backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#fde68a', borderRadius: 10, padding: 12, marginBottom: 16 },
+  disclaimerText: { flex: 1, fontSize: 12, color: '#92400e', lineHeight: 18 },
   noInteractionsBox: { alignItems: 'center', padding: 32, gap: 12 },
   noInteractionsText: { fontSize: 15, color: '#64748b', textAlign: 'center' },
   interactionItem: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0' },
