@@ -9,9 +9,12 @@ import type { Medication } from '../../src/types';
 
 export default function MedicationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { stopMedication, restartMedication, deleteMedication } = useMedicationStore();
-  const [med, setMed] = useState<Medication | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { medications, stopMedication, restartMedication, deleteMedication } = useMedicationStore();
+
+  // Warm-start: show from store immediately so there's no loading spinner on tap
+  const cached = medications.find((m) => m.id === id) ?? null;
+  const [med, setMed] = useState<Medication | null>(cached);
+  const [loading, setLoading] = useState(cached === null);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
@@ -21,6 +24,14 @@ export default function MedicationDetailScreen() {
   const router = useRouter();
 
   useEffect(() => {
+    // If we already have cached data, fetch silently in background (no spinner)
+    if (cached !== null) {
+      medicationsApi.get(id)
+        .then(({ data }) => setMed(data))
+        .catch(() => {}); // silent — cached data already shown
+      return;
+    }
+    // No cached data (e.g. deep link) — show loading state
     setLoading(true);
     setError(null);
     medicationsApi.get(id)
