@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
 import { supabase } from '../../src/services/supabase';
+import { friendlyError } from '../../src/utils/toast';
 
 export default function LoginScreen() {
   const { signIn } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
@@ -16,7 +19,7 @@ export default function LoginScreen() {
     try {
       await signIn(email.trim().toLowerCase(), password);
     } catch (err: any) {
-      Alert.alert('Login failed', err.message);
+      Alert.alert('Login failed', friendlyError(err));
     } finally {
       setLoading(false);
     }
@@ -32,7 +35,7 @@ export default function LoginScreen() {
       if (error) throw error;
       Alert.alert('Check your email', `A password reset link has been sent to ${email.trim()}.`);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not send reset email.');
+      Alert.alert('Error', friendlyError(e));
     }
   };
 
@@ -47,8 +50,19 @@ export default function LoginScreen() {
           autoCapitalize="none" keyboardType="email-address" placeholderTextColor="#94a3b8" />
 
         <Text style={styles.fieldLabel}>Password</Text>
-        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword}
-          secureTextEntry placeholderTextColor="#94a3b8" />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholderTextColor="#94a3b8"
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+            <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color="#94a3b8" />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotLink}>
           <Text style={styles.forgotText}>Forgot password?</Text>
@@ -79,6 +93,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, marginBottom: 0, color: '#0f172a',
     minHeight: 52,
   },
+  passwordRow: { flexDirection: 'row', alignItems: 'center' },
+  passwordInput: { flex: 1 },
+  eyeBtn: { padding: 12, marginLeft: 4 },
   forgotLink: { alignSelf: 'flex-end', marginTop: 8, marginBottom: 12, paddingVertical: 8, paddingHorizontal: 4 },
   forgotText: { fontSize: 15, color: '#0d9488', fontWeight: '500' },
   btn: {

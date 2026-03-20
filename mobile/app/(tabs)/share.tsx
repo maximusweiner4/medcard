@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Share, ActivityIndicator, ScrollView, Switch, Dimensions } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { patientsApi } from '../../src/services/api';
 import { useBiometricStore } from '../../src/stores/biometricStore';
+import { showSuccess } from '../../src/utils/toast';
 
 export default function ShareScreen() {
   const { activePatient } = usePatientStore();
@@ -14,6 +15,11 @@ export default function ShareScreen() {
   const [shareData, setShareData] = useState<{ shareUrl: string; qrCodeDataUrl: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const { isEnabled, setSetting } = useBiometricStore();
+
+  // Clear stale link whenever the active patient changes
+  useEffect(() => {
+    setShareData(null);
+  }, [activePatient?.id]);
 
   if (!activePatient) {
     return (
@@ -33,6 +39,7 @@ export default function ShareScreen() {
     try {
       const { data } = await patientsApi.createShare(activePatient!.id);
       setShareData(data);
+      showSuccess('Share link generated');
     } catch (err: any) {
       Alert.alert('Error', err.message);
     } finally {
@@ -73,7 +80,15 @@ export default function ShareScreen() {
           <View style={styles.qrContainer}>
             <QRCode value={shareData.shareUrl} size={Math.min(Dimensions.get('window').width - 64, 400)} color="#0d9488" backgroundColor="#fff" />
           </View>
-          <Text style={styles.qrNote}>Providers can scan this QR code to instantly access the medication list</Text>
+          <Text style={styles.qrNote}>
+            Show this QR code to a doctor, pharmacist, or family member — they can scan it with their phone to instantly see the medication list.
+          </Text>
+          <View style={styles.privacyNote}>
+            <Ionicons name="lock-closed-outline" size={14} color="#0f766e" style={{ marginTop: 1 }} />
+            <Text style={styles.privacyNoteText}>
+              Recipients can only view the list — they cannot edit anything or access your account.
+            </Text>
+          </View>
 
           <View style={styles.urlBox}>
             <Text style={styles.urlText} numberOfLines={2}>{shareData.shareUrl}</Text>
@@ -141,7 +156,9 @@ const styles = StyleSheet.create({
   btnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   shareBox: { alignItems: 'center' },
   qrContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  qrNote: { fontSize: 16, color: '#64748b', textAlign: 'center', marginBottom: 20 },
+  qrNote: { fontSize: 16, color: '#64748b', textAlign: 'center', marginBottom: 10, lineHeight: 22 },
+  privacyNote: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, backgroundColor: '#f0fdf4', borderRadius: 8, padding: 10, marginBottom: 16, width: '100%' },
+  privacyNoteText: { flex: 1, fontSize: 13, color: '#0f766e', lineHeight: 18 },
   urlBox: { backgroundColor: '#f1f5f9', borderRadius: 10, padding: 14, width: '100%', marginBottom: 14 },
   urlText: { fontSize: 13, color: '#475569', fontFamily: 'monospace' },
   copyBtn: { backgroundColor: '#0d9488', flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12, marginBottom: 12 },

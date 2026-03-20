@@ -25,6 +25,11 @@ export const useMedicationStore = create<MedicationState>((set, get) => ({
 
   fetchMedications: async (patientId, showStopped = false) => {
     _latestMedFetchId = patientId;
+    // Clear immediately when switching patients so stale data never shows
+    const currentMeds = get().medications;
+    if (currentMeds.length > 0 && currentMeds[0].patientId !== patientId) {
+      set({ medications: [] });
+    }
     set({ loading: true, error: null });
     // Warm-start: show cached data immediately so the list is never blank
     try {

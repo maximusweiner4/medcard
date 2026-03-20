@@ -20,6 +20,7 @@ export default function DisclaimerScreen({ onAccept }: Props) {
         <Text style={styles.title}>Before You Continue</Text>
       </View>
 
+      <Text style={styles.scrollHint}>Scroll down to read all terms ↓</Text>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Medical Disclaimer</Text>
@@ -79,6 +80,7 @@ const styles = StyleSheet.create({
   body: { fontSize: 15, color: '#334155', lineHeight: 22, marginBottom: 10 },
   bold: { fontWeight: '700', color: '#0f172a' },
   link: { color: '#0d9488', textDecorationLine: 'underline' },
+  scrollHint: { textAlign: 'center', fontSize: 13, color: '#94a3b8', paddingVertical: 6 },
   footer: { padding: 24, paddingBottom: 40, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e2e8f0' },
   btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
   btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },

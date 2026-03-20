@@ -12,9 +12,15 @@ import { usePatientStore } from '../src/stores/patientStore';
 import { useMedicationStore } from '../src/stores/medicationStore';
 import type { Medication } from '../src/types';
 
+function safeDate(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d.toLocaleDateString('en-US');
+}
+
 export default function PatientDisplayScreen() {
   const { activePatient } = usePatientStore();
-  const { medications, fetchMedications } = useMedicationStore();
+  const { medications, fetchMedications, error: medError } = useMedicationStore();
   const [darkMode, setDarkMode] = useState(false);
   const router = useRouter();
 
@@ -43,6 +49,8 @@ export default function PatientDisplayScreen() {
   }
 
   const active = medications.filter((m) => m.isActive);
+  const dob = safeDate(activePatient.dateOfBirth);
+  const updatedAt = safeDate(activePatient.updatedAt);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
@@ -50,16 +58,27 @@ export default function PatientDisplayScreen() {
 
       {/* Header */}
       <View style={[styles.header, { backgroundColor: darkMode ? '#1e293b' : '#0d9488' }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityLabel="Exit display mode">
+          <Ionicons name="chevron-back" size={28} color="#fff" />
+        </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.patientName}>{activePatient.name}</Text>
-          {activePatient.dateOfBirth ? (
-            <Text style={styles.headerSub}>DOB: {new Date(activePatient.dateOfBirth).toLocaleDateString('en-US')}</Text>
+          {dob ? (
+            <Text style={styles.headerSub}>DOB: {dob}</Text>
           ) : null}
         </View>
         <TouchableOpacity onPress={() => setDarkMode(!darkMode)} style={styles.modeToggle}>
           <Ionicons name={darkMode ? 'sunny-outline' : 'moon-outline'} size={22} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {/* Offline / cached data banner */}
+      {medError && active.length > 0 && (
+        <View style={styles.offlineBanner}>
+          <Ionicons name="cloud-offline-outline" size={14} color="#92400e" />
+          <Text style={styles.offlineBannerText}>Showing saved data — may not be current</Text>
+        </View>
+      )}
 
       {/* Allergy Banner */}
       {activePatient.allergies.length > 0 ? (
@@ -90,18 +109,19 @@ export default function PatientDisplayScreen() {
       </ScrollView>
 
       <Text style={[styles.footer, { color: subText }]}>
-        KinRx · Last updated {activePatient.updatedAt ? new Date(activePatient.updatedAt).toLocaleDateString('en-US') : '—'}
+        KinRx · Last updated {updatedAt ?? '—'}
       </Text>
     </SafeAreaView>
   );
 }
 
 function MedCard({ med, bg, border, text, subText }: { med: Medication; bg: string; border: string; text: string; subText: string }) {
+  const [imgError, setImgError] = useState(false);
   return (
     <View style={[styles.card, { backgroundColor: bg, borderColor: border }]}>
       <View style={styles.cardLeft}>
-        {med.pillImageUrl ? (
-          <Image source={{ uri: med.pillImageUrl }} style={styles.pillImg} />
+        {med.pillImageUrl && !imgError ? (
+          <Image source={{ uri: med.pillImageUrl }} style={styles.pillImg} onError={() => setImgError(true)} />
         ) : (
           <View style={[styles.pillPlaceholder, { backgroundColor: border }]}>
             <Ionicons name="medical-outline" size={32} color="#0d9488" />
@@ -136,10 +156,13 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   noPatient: { fontSize: 18, fontWeight: '600' },
-  header: { paddingTop: 12, paddingHorizontal: 20, paddingBottom: 18, flexDirection: 'row', alignItems: 'center' },
+  header: { paddingTop: 12, paddingHorizontal: 12, paddingBottom: 18, flexDirection: 'row', alignItems: 'center' },
+  backBtn: { padding: 8, marginRight: 4 },
   patientName: { fontSize: 28, fontWeight: '800', color: '#fff' },
   headerSub: { fontSize: 16, color: '#99f6e4', marginTop: 2 },
   modeToggle: { padding: 8 },
+  offlineBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fef3c7', paddingHorizontal: 16, paddingVertical: 8 },
+  offlineBannerText: { fontSize: 13, color: '#92400e' },
   allergyBanner: { backgroundColor: '#dc2626', paddingHorizontal: 20, paddingVertical: 12, flexDirection: 'row', alignItems: 'center' },
   allergyBannerText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   noAllergyBanner: { backgroundColor: '#16a34a' },

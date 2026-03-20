@@ -10,6 +10,12 @@ import { patientsApi, caregiversApi } from '../../src/services/api';
 
 import { CaregiverRelation } from '../../src/types';
 
+function safeDate(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d.toLocaleDateString('en-US');
+}
+
 export default function PatientProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { activePatient } = usePatientStore();
@@ -74,8 +80,8 @@ export default function PatientProfileScreen() {
       <View style={styles.profileCard}>
         <Ionicons name="person-circle-outline" size={64} color="#0f4c81" style={{ marginBottom: 12 }} />
         <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">{patient.name}</Text>
-        {patient.dateOfBirth && (
-          <Text style={styles.dob}>DOB: {new Date(patient.dateOfBirth).toLocaleDateString('en-US')}</Text>
+        {safeDate(patient.dateOfBirth) && (
+          <Text style={styles.dob}>DOB: {safeDate(patient.dateOfBirth)}</Text>
         )}
         {patient.allergies.length > 0 ? (
           <View style={styles.allergyBox}>
@@ -168,9 +174,10 @@ export default function PatientProfileScreen() {
 
           <View style={styles.inviteForm}>
             <Text style={styles.inviteTitle}>Invite Caregiver</Text>
+            <Text style={styles.inviteFieldLabel}>Email address <Text style={{ color: '#dc2626' }}>*</Text></Text>
             <TextInput
               style={styles.inviteInput}
-              placeholder="Email address"
+              placeholder="e.g. jane@example.com"
               value={caregiverEmail}
               onChangeText={setCaregiverEmail}
               keyboardType="email-address"
@@ -230,7 +237,8 @@ const styles = StyleSheet.create({
   permText: { fontSize: 13, fontWeight: '600' },
   removeBtn: { padding: 12, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
   inviteForm: { marginTop: 16, gap: 10 },
-  inviteTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a', marginBottom: 4 },
+  inviteTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a', marginBottom: 8 },
+  inviteFieldLabel: { fontSize: 14, fontWeight: '600', color: '#1e293b', marginBottom: 6 },
   inviteInput: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#0f172a' },
   inviteBtn: { backgroundColor: '#0f4c81', borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   inviteBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },

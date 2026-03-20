@@ -4,18 +4,21 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { medicationsApi } from '../../src/services/api';
 import { useMedicationStore } from '../../src/stores/medicationStore';
+import { usePatientStore } from '../../src/stores/patientStore';
 import { showSuccess } from '../../src/utils/toast';
 import type { Medication } from '../../src/types';
 
 export default function MedicationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { medications, stopMedication, restartMedication, deleteMedication } = useMedicationStore();
+  const { activePatient } = usePatientStore();
 
   // Warm-start: show from store immediately so there's no loading spinner on tap
   const cached = medications.find((m) => m.id === id) ?? null;
   const [med, setMed] = useState<Medication | null>(cached);
   const [loading, setLoading] = useState(cached === null);
   const [error, setError] = useState<string | null>(null);
+  const [pillImageError, setPillImageError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
   const [historyLogs, setHistoryLogs] = useState<any[]>([]);
@@ -27,7 +30,14 @@ export default function MedicationDetailScreen() {
     // If we already have cached data, fetch silently in background (no spinner)
     if (cached !== null) {
       medicationsApi.get(id)
-        .then(({ data }) => setMed(data))
+        .then(({ data }) => {
+          // Verify this medication belongs to the active patient
+          if (activePatient && data.patientId !== activePatient.id) {
+            setError('This medication belongs to a different patient.');
+            return;
+          }
+          setMed(data);
+        })
         .catch(() => {}); // silent — cached data already shown
       return;
     }
@@ -35,7 +45,13 @@ export default function MedicationDetailScreen() {
     setLoading(true);
     setError(null);
     medicationsApi.get(id)
-      .then(({ data }) => setMed(data))
+      .then(({ data }) => {
+        if (activePatient && data.patientId !== activePatient.id) {
+          setError('This medication belongs to a different patient.');
+          return;
+        }
+        setMed(data);
+      })
       .catch(() => setError('Failed to load medication. Tap to retry.'))
       .finally(() => setLoading(false));
   }, [id]);
@@ -93,6 +109,15 @@ export default function MedicationDetailScreen() {
     }
   }
 
+  function retry() {
+    setLoading(true);
+    setError(null);
+    medicationsApi.get(id)
+      .then(({ data }) => setMed(data))
+      .catch(() => setError('Failed to load medication. Tap to retry.'))
+      .finally(() => setLoading(false));
+  }
+
   if (loading) return <ActivityIndicator style={{ flex: 1 }} color="#0f4c81" />;
   if (!med) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
@@ -100,7 +125,7 @@ export default function MedicationDetailScreen() {
         {error || 'Medication not found.'}
       </Text>
       {error && (
-        <TouchableOpacity onPress={() => { setLoading(true); setError(null); medicationsApi.get(id).then(({ data }) => setMed(data)).catch(() => setError('Failed to load medication. Tap to retry.')).finally(() => setLoading(false)); }}>
+        <TouchableOpacity onPress={retry}>
           <Text style={{ color: '#0d9488', fontWeight: '600' }}>Retry</Text>
         </TouchableOpacity>
       )}
@@ -120,8 +145,12 @@ export default function MedicationDetailScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
       <View style={styles.topCard}>
-        {med.pillImageUrl ? (
-          <Image source={{ uri: med.pillImageUrl }} style={styles.pillImg} />
+        {med.pillImageUrl && !pillImageError ? (
+          <Image
+            source={{ uri: med.pillImageUrl }}
+            style={styles.pillImg}
+            onError={() => setPillImageError(true)}
+          />
         ) : (
           <View style={styles.pillPlaceholder}><Text style={{ fontSize: 40 }}>💊</Text></View>
         )}
@@ -150,8 +179,8 @@ export default function MedicationDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Appearance</Text>
           <View style={styles.tagRow}>
-            {med.pillColor && <View style={styles.tag}><Text style={styles.tagText}>{med.pillColor}</Text></View>}
-            {med.pillShape && <View style={styles.tag}><Text style={styles.tagText}>{med.pillShape}</Text></View>}
+            {med.pillColor && <View style={styles.tag}><Text style={styles.tagText}>Color: {med.pillColor}</Text></View>}
+            {med.pillShape && <View style={styles.tag}><Text style={styles.tagText}>Shape: {med.pillShape}</Text></View>}
             {med.pillImprint && <View style={styles.tag}><Text style={styles.tagText}>Imprint: {med.pillImprint}</Text></View>}
           </View>
         </View>
@@ -230,7 +259,7 @@ export default function MedicationDetailScreen() {
           </TouchableOpacity>
         )}
         <TouchableOpacity style={[styles.deleteBtn, actionLoading && { opacity: 0.4 }]} onPress={confirmDelete} disabled={actionLoading}>
-          <Text style={styles.deleteBtnText}>Delete</Text>
+          <Text style={styles.deleteBtnText}>Delete Medication</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -262,8 +291,8 @@ const styles = StyleSheet.create({
   stopBtnText: { color: '#dc2626', fontWeight: '700', fontSize: 15 },
   restartBtn: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#86efac', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   restartBtnText: { color: '#16a34a', fontWeight: '700', fontSize: 15 },
-  deleteBtn: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  deleteBtnText: { color: '#94a3b8', fontSize: 14 },
+  deleteBtn: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fca5a5', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  deleteBtnText: { color: '#dc2626', fontSize: 15, fontWeight: '600' },
   editBtn: { backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 0 },
   editBtnText: { color: '#1e40af', fontWeight: '700', fontSize: 15 },
   historyToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },

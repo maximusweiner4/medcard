@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
+import { friendlyError } from '../../src/utils/toast';
 
 export default function RegisterScreen() {
   const { signUp } = useAuthStore();
@@ -9,6 +11,8 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSignUp() {
@@ -23,7 +27,7 @@ export default function RegisterScreen() {
       await signUp(email.trim().toLowerCase(), password, name.trim());
       Alert.alert('Account created!', 'Check your email to confirm your account, then sign in.');
     } catch (err: any) {
-      Alert.alert('Sign up failed', err.message);
+      Alert.alert('Sign up failed', friendlyError(err));
     } finally {
       setLoading(false);
     }
@@ -44,12 +48,34 @@ export default function RegisterScreen() {
           autoCapitalize="none" keyboardType="email-address" placeholderTextColor="#94a3b8" />
 
         <Text style={styles.fieldLabel}>Password</Text>
-        <TextInput style={styles.input} placeholder="Password (min 6 characters)" value={password}
-          onChangeText={setPassword} secureTextEntry placeholderTextColor="#94a3b8" />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Password (min 6 characters)"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholderTextColor="#94a3b8"
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+            <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color="#94a3b8" />
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.fieldLabel}>Confirm Password</Text>
-        <TextInput style={styles.input} placeholder="Re-enter password" value={confirmPassword}
-          onChangeText={setConfirmPassword} secureTextEntry placeholderTextColor="#94a3b8" />
+        <View style={styles.passwordRow}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Re-enter password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!showConfirmPassword}
+            placeholderTextColor="#94a3b8"
+          />
+          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
+            <Ionicons name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color="#94a3b8" />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity style={[styles.btn, loading && styles.btnDisabled]} onPress={handleSignUp} disabled={loading}>
           <Text style={styles.btnText}>{loading ? 'Creating account…' : 'Create Account'}</Text>
@@ -76,6 +102,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, marginBottom: 0, color: '#0f172a',
     minHeight: 52,
   },
+  passwordRow: { flexDirection: 'row', alignItems: 'center' },
+  passwordInput: { flex: 1 },
+  eyeBtn: { padding: 12, marginLeft: 4 },
   btn: { backgroundColor: '#0d9488', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 24 },
   btnDisabled: { opacity: 0.6 },
   btnText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },

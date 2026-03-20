@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { medicationsApi } from '../../../src/services/api';
 import { showSuccess } from '../../../src/utils/toast';
 
@@ -10,6 +10,7 @@ const FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Four tim
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const navigation = useNavigation();
 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -28,6 +29,27 @@ export default function EditMedicationScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pillsRemaining, setPillsRemaining] = useState('');
 
+  // Track unsaved changes
+  const isDirtyRef = useRef(false);
+  function markDirty() { isDirtyRef.current = true; }
+
+  // Warn before navigating away with unsaved changes
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', (e: any) => {
+      if (!isDirtyRef.current) return;
+      e.preventDefault();
+      Alert.alert(
+        'Discard changes?',
+        'You have unsaved changes. Are you sure you want to go back?',
+        [
+          { text: 'Keep Editing', style: 'cancel' },
+          { text: 'Discard', style: 'destructive', onPress: () => navigation.dispatch(e.data.action) },
+        ]
+      );
+    });
+    return unsub;
+  }, [navigation]);
+
   function fetchMed() {
     setLoading(true);
     setError(null);
@@ -44,6 +66,8 @@ export default function EditMedicationScreen() {
         setPharmacy(data.pharmacy ?? '');
         setRefillDate(data.nextRefillDate ? new Date(data.nextRefillDate) : null);
         setPillsRemaining(data.pillsRemaining != null ? String(data.pillsRemaining) : '');
+        // Reset dirty flag after initial load
+        isDirtyRef.current = false;
       })
       .catch(() => setError('Failed to load medication. Tap to retry.'))
       .finally(() => setLoading(false));
@@ -57,7 +81,7 @@ export default function EditMedicationScreen() {
     if (pillsRemaining.trim()) {
       const n = parseInt(pillsRemaining.trim(), 10);
       if (isNaN(n) || n < 0 || String(n) !== pillsRemaining.trim()) {
-        Alert.alert('Invalid amount', 'Please enter a whole number like 30 (no decimals).');
+        Alert.alert('Invalid amount', 'Please enter a whole number (e.g. 30). Decimals are not allowed.');
         return;
       }
     }
@@ -75,6 +99,7 @@ export default function EditMedicationScreen() {
         nextRefillDate: refillDate?.toISOString() ?? null,
         pillsRemaining: pillsRemaining.trim() ? parseInt(pillsRemaining.trim(), 10) : null,
       });
+      isDirtyRef.current = false; // clear so back navigation doesn't warn
       showSuccess('Medication updated');
       router.back();
     } catch (err: any) {
@@ -110,7 +135,7 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="e.g. 10 mg, 500 mg"
         value={dose}
-        onChangeText={setDose}
+        onChangeText={(v) => { markDirty(); setDose(v); }}
         placeholderTextColor="#94a3b8"
       />
 
@@ -119,7 +144,7 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="e.g. Tablet, Capsule, Liquid"
         value={form}
-        onChangeText={setForm}
+        onChangeText={(v) => { markDirty(); setForm(v); }}
         placeholderTextColor="#94a3b8"
       />
 
@@ -128,29 +153,29 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="e.g. Oral, Topical, Inhaled"
         value={route}
-        onChangeText={setRoute}
+        onChangeText={(v) => { markDirty(); setRoute(v); }}
         placeholderTextColor="#94a3b8"
       />
 
       <Text style={styles.label}>Frequency</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator style={{ marginBottom: 18 }}>
+      <View style={styles.freqGrid}>
         {FREQUENCIES.map((f) => (
           <TouchableOpacity
             key={f}
             style={[styles.freqOption, frequency === f && styles.freqSelected]}
-            onPress={() => setFrequency(f)}
+            onPress={() => { markDirty(); setFrequency(f); }}
           >
             <Text style={[styles.freqOptionText, frequency === f && styles.freqSelectedText]}>{f}</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
       <Text style={styles.label}>Special Instructions</Text>
       <TextInput
         style={[styles.input, { height: 80 }]}
         placeholder="e.g. Take with food, avoid grapefruit"
         value={instructions}
-        onChangeText={setInstructions}
+        onChangeText={(v) => { markDirty(); setInstructions(v); }}
         multiline
         placeholderTextColor="#94a3b8"
       />
@@ -160,7 +185,8 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="Doctor's name (optional)"
         value={prescriber}
-        onChangeText={setPrescriber}
+        onChangeText={(v) => { markDirty(); setPrescriber(v); }}
+        autoCapitalize="words"
         placeholderTextColor="#94a3b8"
       />
 
@@ -169,7 +195,7 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="e.g. High blood pressure, Type 2 diabetes"
         value={indication}
-        onChangeText={setIndication}
+        onChangeText={(v) => { markDirty(); setIndication(v); }}
         placeholderTextColor="#94a3b8"
       />
 
@@ -178,7 +204,7 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="e.g. CVS, Walgreens"
         value={pharmacy}
-        onChangeText={setPharmacy}
+        onChangeText={(v) => { markDirty(); setPharmacy(v); }}
         placeholderTextColor="#94a3b8"
       />
 
@@ -195,12 +221,12 @@ export default function EditMedicationScreen() {
           display="default"
           onChange={(_event, date) => {
             setShowDatePicker(false);
-            if (date) setRefillDate(date);
+            if (date) { markDirty(); setRefillDate(date); }
           }}
         />
       )}
       {refillDate && (
-        <TouchableOpacity onPress={() => setRefillDate(null)} style={{ marginTop: -12, marginBottom: 10, alignSelf: 'flex-end' }}>
+        <TouchableOpacity onPress={() => { markDirty(); setRefillDate(null); }} style={{ marginTop: -12, marginBottom: 10, alignSelf: 'flex-end' }}>
           <Text style={{ fontSize: 13, color: '#94a3b8' }}>Clear date</Text>
         </TouchableOpacity>
       )}
@@ -210,7 +236,7 @@ export default function EditMedicationScreen() {
         style={styles.input}
         placeholder="e.g. 30"
         value={pillsRemaining}
-        onChangeText={setPillsRemaining}
+        onChangeText={(v) => { markDirty(); setPillsRemaining(v); }}
         keyboardType="numeric"
         placeholderTextColor="#94a3b8"
       />
@@ -236,9 +262,10 @@ const styles = StyleSheet.create({
   drugNameHeaderText: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
   label: { fontSize: 16, fontWeight: '600', color: '#1e293b', marginBottom: 6, marginTop: 8 },
   input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 16, marginBottom: 18, color: '#0f172a' },
-  freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 16, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  freqGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 },
+  freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: '#e2e8f0' },
   freqSelected: { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
-  freqOptionText: { color: '#64748b', fontSize: 16 },
+  freqOptionText: { color: '#64748b', fontSize: 15 },
   freqSelectedText: { color: '#1e40af', fontWeight: '600' },
   saveBtn: { backgroundColor: '#0f4c81', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 8, marginBottom: 32 },
   saveBtnDisabled: { opacity: 0.6 },

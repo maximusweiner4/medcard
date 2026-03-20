@@ -23,7 +23,7 @@ app.set('views', path.join(__dirname, '..', 'views'));
 app.use(helmet({ contentSecurityPolicy: false }));
 
 const corsOrigin = process.env.CORS_ORIGIN;
-if (!corsOrigin && process.env.NODE_ENV === 'production') {
+if (!corsOrigin && process.env.NODE_ENV?.toLowerCase() === 'production') {
   throw new Error('CORS_ORIGIN must be set in production. Refusing to start with wildcard CORS.');
 }
 app.use(cors({ origin: corsOrigin || '*' }));

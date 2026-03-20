@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { getPillImage } from '../../src/services/rxnorm';
 import { drugsApi } from '../../src/services/api';
 import { usePatientStore } from '../../src/stores/patientStore';
@@ -17,6 +18,7 @@ export default function AddMedicationScreen() {
   const { activePatient } = usePatientStore();
   const { addMedication } = useMedicationStore();
   const router = useRouter();
+  const navigation = useNavigation();
 
   const [step, setStep] = useState<Step>('search');
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +47,23 @@ export default function AddMedicationScreen() {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, []);
+
+  // Warn before navigating away with unsaved form data
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', (e: any) => {
+      if (step !== 'details') return;
+      e.preventDefault();
+      Alert.alert(
+        'Discard medication?',
+        'You have unsaved changes. Are you sure you want to go back?',
+        [
+          { text: 'Keep Editing', style: 'cancel' },
+          { text: 'Discard', style: 'destructive', onPress: () => navigation.dispatch(e.data.action) },
+        ]
+      );
+    });
+    return unsub;
+  }, [navigation, step]);
 
   function handleSearchChange(text: string) {
     setSearchTerm(text);
@@ -100,7 +119,7 @@ export default function AddMedicationScreen() {
     if (pillsRemaining.trim()) {
       const n = parseInt(pillsRemaining.trim(), 10);
       if (isNaN(n) || n < 0 || String(n) !== pillsRemaining.trim()) {
-        Alert.alert('Invalid amount', 'Please enter a whole number like 30 (no decimals).');
+        Alert.alert('Invalid amount', 'Please enter a whole number (e.g. 30). Decimals are not allowed.');
         return;
       }
     }
@@ -148,7 +167,7 @@ export default function AddMedicationScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.resultRow} onPress={() => handleSelectDrug(item)}>
               <View style={styles.resultInfo}>
-                <Text style={styles.resultName}>{item.name}</Text>
+                <Text style={styles.resultName} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
                 <Text style={styles.resultRxcui}>RxCUI: {item.rxcui}</Text>
               </View>
               <Text style={styles.resultArrow}>›</Text>
@@ -198,19 +217,19 @@ export default function AddMedicationScreen() {
       <TextInput style={styles.input} placeholder="e.g. Oral, Topical, Inhaled" value={route} onChangeText={setRoute} placeholderTextColor="#94a3b8" />
 
       <Text style={styles.label}>Frequency</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator style={{ marginBottom: 14 }}>
+      <View style={styles.freqGrid}>
         {FREQUENCIES.map((f) => (
           <TouchableOpacity key={f} style={[styles.freqOption, frequency === f && styles.freqSelected]} onPress={() => setFrequency(f)}>
             <Text style={[styles.freqOptionText, frequency === f && styles.freqSelectedText]}>{f}</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
       <Text style={styles.label}>Special Instructions</Text>
       <TextInput style={[styles.input, { height: 80 }]} placeholder="e.g. Take with food, avoid grapefruit" value={instructions} onChangeText={setInstructions} multiline placeholderTextColor="#94a3b8" />
 
       <Text style={styles.label}>Prescriber</Text>
-      <TextInput style={styles.input} placeholder="Doctor's name (optional)" value={prescriber} onChangeText={setPrescriber} placeholderTextColor="#94a3b8" />
+      <TextInput style={styles.input} placeholder="Doctor's name (optional)" value={prescriber} onChangeText={setPrescriber} autoCapitalize="words" placeholderTextColor="#94a3b8" />
 
       <Text style={styles.label}>Indication (Reason for Taking)</Text>
       <TextInput style={styles.input} placeholder="e.g. High blood pressure, Type 2 diabetes" value={indication} onChangeText={setIndication} placeholderTextColor="#94a3b8" />
@@ -266,9 +285,10 @@ const styles = StyleSheet.create({
   changeText: { color: '#0f4c81', fontSize: 15 },
   label: { fontSize: 16, fontWeight: '600', color: '#1e293b', marginBottom: 6, marginTop: 8 },
   input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 16, marginBottom: 18, color: '#0f172a' },
-  freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 16, marginRight: 8, borderWidth: 1, borderColor: '#e2e8f0' },
+  freqGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 },
+  freqOption: { backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: '#e2e8f0' },
   freqSelected: { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
-  freqOptionText: { color: '#64748b', fontSize: 16 },
+  freqOptionText: { color: '#64748b', fontSize: 15 },
   freqSelectedText: { color: '#1e40af', fontWeight: '600' },
   saveBtn: { backgroundColor: '#0f4c81', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 8, marginBottom: 32 },
   saveBtnDisabled: { opacity: 0.6 },
