@@ -8,10 +8,7 @@ import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import { patientsApi, caregiversApi } from '../../src/services/api';
 
-import { supabase } from '../../src/services/supabase';
 import { CaregiverRelation } from '../../src/types';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 
 export default function PatientProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,7 +16,6 @@ export default function PatientProfileScreen() {
   const { medications, fetchMedications } = useMedicationStore();
   const router = useRouter();
 
-  const [exportLoading, setExportLoading] = useState(false);
   const [caregivers, setCaregivers] = useState<CaregiverRelation[]>([]);
   const [caregiverEmail, setCaregiverEmail] = useState('');
   const [caregiverRelationship, setCaregiverRelationship] = useState('');
@@ -40,27 +36,6 @@ export default function PatientProfileScreen() {
   if (!patient) return null;
 
   const active = medications.filter((m) => m.isActive);
-
-  async function exportPdf() {
-    setExportLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Not authenticated');
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const fileUri = FileSystem.documentDirectory + 'medication-list.pdf';
-      const result = await FileSystem.downloadAsync(
-        `${apiUrl}/api/patients/${patient!.id}/pdf`,
-        fileUri,
-        { headers: { Authorization: `Bearer ${session.access_token}` } }
-      );
-      if (result.status !== 200) throw new Error('Server error generating PDF');
-      await Sharing.shareAsync(result.uri, { mimeType: 'application/pdf', dialogTitle: 'Save or Share Medication List' });
-    } catch (err: any) {
-      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
-    } finally {
-      setExportLoading(false);
-    }
-  }
 
   function removeCaregiver(relationId: string, name: string) {
     Alert.alert('Remove Caregiver', `Remove ${name} as a caregiver?`, [
@@ -137,19 +112,6 @@ export default function PatientProfileScreen() {
           Bring this medication list to every doctor visit and pharmacy. Ask your pharmacist to review for interactions.
         </Text>
       </View>
-
-      <TouchableOpacity
-        style={[styles.actionBtn, styles.exportBtn, { opacity: exportLoading ? 0.6 : 1 }]}
-        onPress={exportPdf}
-        disabled={exportLoading}
-      >
-        {exportLoading ? <ActivityIndicator color="#0f4c81" size="small" /> :
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Ionicons name="document-outline" size={18} color="#0f4c81" />
-            <Text style={[styles.actionBtnText, { color: '#0f4c81' }]}>Export PDF</Text>
-          </View>
-        }
-      </TouchableOpacity>
 
       <TouchableOpacity style={styles.actionBtn} onPress={() => router.push('/medication/add')}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -255,7 +217,6 @@ const styles = StyleSheet.create({
   actionBtn: { backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   displayBtn: { backgroundColor: '#f0fdf4', borderColor: '#86efac' },
   shareBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
-  exportBtn: { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' },
   actionBtnText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
   sectionToggle: { backgroundColor: '#fff', borderRadius: 12, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   sectionToggleText: { fontSize: 15, fontWeight: '600', color: '#0f172a' },
