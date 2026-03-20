@@ -6,7 +6,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePatientStore } from '../../src/stores/patientStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
-import { patientsApi, caregiversApi, api } from '../../src/services/api';
+import { patientsApi, caregiversApi } from '../../src/services/api';
+
+import { supabase } from '../../src/services/supabase';
 import { CaregiverRelation } from '../../src/types';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -42,13 +44,19 @@ export default function PatientProfileScreen() {
   async function exportPdf() {
     setExportLoading(true);
     try {
-      const response = await api.get(`/patients/${patient!.id}/pdf`, { responseType: 'arraybuffer' });
-      const base64 = Buffer.from(response.data).toString('base64');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Not authenticated');
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
       const fileUri = FileSystem.documentDirectory + 'medication-list.pdf';
-      await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
-      await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', dialogTitle: 'Save or Share Medication List' });
+      const result = await FileSystem.downloadAsync(
+        `${apiUrl}/api/patients/${patient!.id}/pdf`,
+        fileUri,
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
+      );
+      if (result.status !== 200) throw new Error('Server error generating PDF');
+      await Sharing.shareAsync(result.uri, { mimeType: 'application/pdf', dialogTitle: 'Save or Share Medication List' });
     } catch (err: any) {
-      Alert.alert('Export Error', err?.response?.data?.error || err?.message || 'Failed to export PDF');
+      Alert.alert('Export Error', err?.message || 'Failed to export PDF');
     } finally {
       setExportLoading(false);
     }

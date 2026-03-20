@@ -25,8 +25,11 @@ export default function PatientDisplayScreen() {
   const border = darkMode ? '#334155' : '#e2e8f0';
 
   useEffect(() => {
-    if (activePatient && medications.length === 0) fetchMedications(activePatient.id);
-  }, [activePatient]);
+    if (!activePatient) return;
+    // Skip refetch only if we already have meds for THIS patient
+    if (medications.length > 0 && medications[0].patientId === activePatient.id) return;
+    fetchMedications(activePatient.id);
+  }, [activePatient?.id]);
 
   if (!activePatient) {
     return (
